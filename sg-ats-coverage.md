@@ -15,7 +15,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (31 companies, 10 vendors)
+## Direct ATS (35 companies, 10 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -39,6 +39,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Coda Payments | Lever | `lever.mjs` | jobs.lever.co/Coda | live (24 postings) — **slug is capital-C `Coda`** |
 | Nium | Lever | `lever.mjs` | jobs.lever.co/nium | live |
 | DBS Bank | Workday | `workday.mjs` | dbs.wd3.myworkdayjobs.com/DBS_Careers | live (1,382 postings) |
+| UOB | Workday | `workday.mjs` | uobgroup.wd3.myworkdayjobs.com/UOBExternal | live (976 postings) |
 | Grab | SmartRecruiters (Umbraco branded front) | `smartrecruiters.mjs` | www.grab.careers/en/jobs/ (SR API: `/v1/companies/Grab/postings`; RSS: `/en/jobs/xml/?rss=true`) | live (346 postings, 77 SG) — migrated from Workday; old board dead |
 | Nasdaq | Workday | `workday.mjs` | nasdaq.wd1.myworkdayjobs.com/Global_External_Site | live (184 postings) |
 | PropertyGuru | Workday | `workday.mjs` | propertyguru.wd105.myworkdayjobs.com/en-US/PropertyGuru/ | live (24 postings) |
@@ -48,6 +49,9 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Standard Chartered | SuccessFactors (CSB) | `successfactors.mjs` | jobs.standardchartered.com/ (`provider: successfactors`) | live (697 postings; first posting already a SG role) |
 | CPF Board | SuccessFactors (CSB) | `successfactors.mjs` | careers.cpf.gov.sg/search/?q=& (`provider: successfactors`) | live (23 postings; CSB API reachable directly at careers.cpf.gov.sg — see gotchas) |
 | SGX | SuccessFactors (J2W server-rendered) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.sgx.com/search/?q=& | live (25 postings, all SG) — server-rendered search, `startrow` pagination; CSB API on branded host is 401 auth-gated (see gotchas) |
+| GIC | SuccessFactors (RMK, J2W branded host) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.gic.com.sg/search/?q=& | live (20+ postings) — RMK on `career10.successfactors.com` (`company=gicprivate`); CSB API on branded host errors; J2W server-rendered search works |
+| NETS | SuccessFactors (RMK, J2W branded host) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.nets.com.sg/search/?q=& | live (25+ postings) — same `career10.successfactors.com` instance as GIC (`company=NETS`); CSB API on branded host errors; J2W server-rendered search works |
+| Ninja Van | Lever | `lever.mjs` | jobs.lever.co/ninjavan | live (174 postings, 15 SG) — single Lever board serves both Ninja Van (logistics) and Ninja Mart (FMCG) under same parent company |
 | BlackRock | Radancy (TalentBrew) | `radancy.mjs` | careers.blackrock.com/en/search-jobs (`provider: radancy`) | live (280 postings) |
 | Mastercard | Phenom (fronting Workday) | `phenom.mjs` | careers.mastercard.com (`provider: phenom`) | live (1,129 postings; SG roles prominent) |
 
@@ -68,7 +72,7 @@ under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 
-The 28 websearch-fallback companies and the `search_queries` boards now live
+The 24 websearch-fallback companies and the `search_queries` boards now live
 in **`TODO.md`** — the "Known ATS / why not direct" notes there are the next
 steps. Resolved companies move back here as Direct rows.
 
@@ -82,10 +86,10 @@ new vendors.
 | Vendor | Provider module | SG companies served | Status |
 |---|---|---|---|
 | Greenhouse | `greenhouse.mjs` | 15 | ✓ direct |
-| Workday | `workday.mjs` | 5 (DBS, Nasdaq, PropertyGuru, S&P Global, Visa) | ✓ direct |
-| Lever | `lever.mjs` | 2 | ✓ direct |
+| Workday | `workday.mjs` | 6 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa) | ✓ direct |
+| Lever | `lever.mjs` | 3 (Coda Payments, Ninja Van, Nium) | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
-| SuccessFactors | `successfactors.mjs` | 3 (Standard Chartered, CPF Board — CSB; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX |
+| SuccessFactors | `successfactors.mjs` | 5 (Standard Chartered, CPF Board — CSB; GIC, NETS — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS |
 | Phenom | `phenom.mjs` | 1 | ✓ direct |
 | Radancy | `radancy.mjs` | 1 | ✓ direct |
 | iCIMS | `icims.mjs` | 1 | ✓ direct |
@@ -154,23 +158,42 @@ So for every J2W tenant: try the CSB API on the branded host first, and if it
 401s, fall back to parsing the server-rendered search page — no WAF can block
 the page the applicant actually reads.
 
+**RMK + J2W hybrid**: GIC and NETS are RMK instances on `career10.successfactors.com`
+(`company=gicprivate` / `company=NETS`) with J2W-branded fronts (`careers.gic.com.sg`,
+`careers.nets.com.sg`). The CSB API on the branded host returns an error
+(`{"error":"Error retrieving jobs"}`) — not 401, but the endpoint is non-functional.
+The J2W server-rendered search works: `GET /search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=0`
+returns jobs as HTML tiles. Same `startrow` pagination pattern as SGX; the
+`successfactors.mjs` J2W HTML-parser variant can serve all three.
+
 ## Expansion roadmap (next candidates to resolve)
 
 Priority order — these are the SG companies that move from Websearch → Direct,
 expanding career-ops' SG coverage:
 
-1. **Carousell** — SmartRecruiters behind their WordPress proxy; a `local_parser`
-   script could call `/wp-content/themes/suki/smartrecruiters/api.php` directly
-   (bypasses the private-company-id 404). **Pattern to copy: Grab** — its branded
-   Umbraco front wraps a *public* SR company id (`Grab`), so the plain SR API
-   works zero-token (`/v1/companies/Grab/postings`, `totalFound` matches the
-   site's own RSS feed). If Carousell's id ever turns public, same path.
-2. **GIC, Temasek, OCBC, UOB** — most likely Workday tenants; a tenant URL (e.g. from
-   a LinkedIn job link or careers-page footer on another network) unlocks direct
-   scanning via the existing `workday.mjs`.
-3. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
+1. **OCBC** — confirmed **Oracle Taleo** at `ocbc.taleo.net/careersection/ocbc_external/jobsearch.ftl`
+   (from careers page), but `ocbc.taleo.net` DNS-unresolvable from this network.
+   Taleo not in career-ops provider list; would need a new provider module.
+2. **GIC, Temasek** — GIC resolved (SuccessFactors RMK, above). Temasek:
+   `www.temasek.com.sg` is **403 WAF-blocked** entirely from this network; ATS unknown.
+3. **OCBC, UOB** — UOB resolved (Workday, above). OCBC: Taleo, DNS blocked (see #1).
+4. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
    identify ATS, then re-probe.
-4. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
+5. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
+6. **NBIM** — confirmed **Webcruiter** (`398280.webcruiter.no`, Nordic ATS); no
+   existing provider module; would need a new provider.
+7. **Fullerton Fund Management** — jobs are **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`);
+   not zero-token scannable.
+8. **Wise** — **SmartRecruiters Attrax** custom career site (`wise.jobs`);
+   underlying ATS may be SmartRecruiters but public API not directly accessible.
+9. **Endowus** — `careers-page.com` custom platform (`endowus.careers-page.com`);
+   no standard ATS markers found.
+10. **MAS** — no direct job listings found on `mas.gov.sg/careers`; likely
+    Careers@Gov (government HR system) with no public API.
+11. **Sea Group, Shopee, GoTo, Traveloka, Atlassian, Canva, Revolut, Aspire,
+    StashAway** — all SPA/JS shells with no ATS markers extractable from curl.
+12. **Carousell** — SmartRecruiters-backed but private company id (public SR
+    API 404s on the `Carousell` slug).
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from
