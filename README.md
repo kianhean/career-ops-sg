@@ -51,13 +51,76 @@ like zero openings — never hand-guess a board into the coverage map.
 - **28 companies** on websearch fallback — the roadmap in
   `sg-ats-coverage.md` is the priority order to resolve next.
 
-## Usage
+## Using this repo with the career-ops skill
+
+The workflow: this repo holds the verified facts; you hand them to the skill
+with a prompt, and the skill configures its own `portals.yml` from them.
+
+### 1. Install career-ops next to this repo
 
 ```sh
-# Run a scanner (see each file's header for flags)
-node scan-interamt.mjs --dry-run
+cd ~/Projects
+npx @santifer/career-ops init      # clones the skill into ./career-ops, installs deps
+cd career-ops
+npm run doctor                     # validates prerequisites
 ```
 
-The full career-ops pipeline (`node scan.mjs`, `/career-ops`) runs from the
-upstream skill's repo, configured via `portals.yml` — this repo produces the
-verified facts that go into that configuration.
+Layout — both repos side by side, so the prompt can reference this repo by
+relative path:
+
+```
+~/Projects/
+├── career-ops-sg/     # this repo (coverage knowledge)
+└── career-ops/        # the skill (scanner + providers)
+```
+
+### 2. Configure portals.yml from the coverage map
+
+In the `career-ops` directory, give your AI CLI this prompt (adjust the path if
+the repos live elsewhere):
+
+```text
+I want to scan Singapore companies directly with your providers.
+Read ../career-ops-sg/sg-ats-coverage.md — the Singapore ATS coverage map.
+
+From the "Direct ATS" table, add every company to portals.yml
+`tracked_companies`, following the schema in templates/portals.example.yml:
+- name = the company name column
+- careers_url = the Board URL column
+- provider = the "career-ops provider" column, as the module name without
+  the .mjs suffix (e.g. workday, greenhouse, successfactors)
+Also add Jobstreet Singapore (from the "Also direct" note) under
+`job_boards` with siteKey: SG-Main.
+Keep my existing title_filter / location_filter untouched.
+Then list how many companies you configured, and run a dry-run scan
+(`node scan.mjs --dry-run`) so we can confirm real job counts before saving.
+```
+
+The skill maps each row to a working board URL — no hand-guessing of tenants
+or slugs, because every Direct row was verified before being committed here.
+
+### 3. Run scans
+
+```sh
+node scan.mjs --verify   # scan portals; Playwright-drops expired postings
+/career-ops scan         # same, via the skill's slash command
+/career-ops pipeline     # evaluate new offers
+```
+
+`scan-interamt.mjs` in this repo is a standalone example of a Playwright-only
+scanner — the pattern to copy when a board has no API and the vendor isn't
+covered by a provider module yet.
+
+### 4. Feed verified findings back
+
+When a scan uncovers a new Singapore board, or you resolve a company from the
+Websearch fallback table, verify it (see "How a company moves to Direct") and
+**commit the updated row to `sg-ats-coverage.md`**. The career-ops install runs
+from ephemeral containers — nothing persists uncommitted, and the prompt in
+step 2 is only as good as this repo's coverage map.
+
+Also run a scanner here for special-handling boards:
+
+```sh
+node scan-interamt.mjs --dry-run   # see each script's header for flags
+```

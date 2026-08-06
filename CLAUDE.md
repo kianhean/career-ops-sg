@@ -11,6 +11,11 @@ produces the verified ATS knowledge that gets configured upstream.
   by career-ops, its ATS vendor, the provider module that serves it, and
   verified live status. Every row under **Direct** is a company the skill can
   scan end-to-end; the **Gap** sections are the expansion targets.
+- The coverage doc is consumed by the skill via a **copy-paste prompt** (see
+  README, "Using this repo with the career-ops skill"): the user runs it inside
+  the career-ops install, and the skill turns the Direct table into
+  `portals.yml` `tracked_companies`. So rows must stay machine-parseable —
+  one company per row, exact board URLs, provider = module name without `.mjs`.
 - The scan scripts (`scan.mjs`, `scan-ats-full.mjs`, `scan-interamt.mjs`) are
   reference copies from career-ops. Note: **`providers/` is NOT in this repo**
   — importing scan.mjs or scan-ats-full.mjs fails here because they import
