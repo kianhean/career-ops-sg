@@ -42,14 +42,35 @@ This repo is that knowledge base, in one place:
 Rule of thumb: **verify, then commit.** A wrong slug fails silently and looks
 like zero openings — never hand-guess a board into the coverage map.
 
-## Current state (2026-08-06)
+## Direct ATS coverage (2026-08-06)
 
-- **30 companies direct** across 10 ATS vendors — incl. **CPF Board**
-  (SuccessFactors CSB, added 2026-08-06: 23 postings, API reachable zero-token
-  via `careers.cpf.gov.sg/services/recruiting/v1/jobs` despite the raw
-  sapsf.com instance being WAF-blocked).
-- **28 companies** on websearch fallback — the roadmap in
-  `sg-ats-coverage.md` is the priority order to resolve next.
+30 companies across 10 ATS vendors, plus one job board. Canonical source with
+verified board URLs: `sg-ats-coverage.md`.
+
+| Vendor | career-ops provider | Companies |
+|---|---|---|
+| Greenhouse | `greenhouse.mjs` | Adyen, Cloudflare, Datadog, Elastic, Flow Traders, GitLab, IMC Trading, Jane Street, Jump Trading, MongoDB, Optiver, Squarepoint Capital, Stripe, Thunes, Tower Research Capital |
+| Workday | `workday.mjs` | DBS Bank, Nasdaq, PropertyGuru, S&P Global, Visa |
+| Lever | `lever.mjs` | Coda Payments, Nium |
+| Ashby | `ashby.mjs` | Airwallex, Confluent |
+| SuccessFactors | `successfactors.mjs` | CPF Board, Standard Chartered |
+| SmartRecruiters | `smartrecruiters.mjs` | Grab |
+| iCIMS | `icims.mjs` | MSCI |
+| Radancy | `radancy.mjs` | BlackRock |
+| Phenom | `phenom.mjs` | Mastercard |
+| SEEK (job board) | `jobstreet.mjs` | Jobstreet Singapore (`siteKey: SG-Main`) |
+
+Recent additions:
+
+- **Grab** (2026-08-06) — moved from Workday to **SmartRecruiters** (branded
+  Umbraco front at grab.careers, public company id `Grab`). Live: 346 postings,
+  77 in Singapore; API and RSS feed both verified zero-token.
+- **CPF Board** (2026-08-06) — **SuccessFactors CSB**, 23 postings. The raw
+  sapsf.com instance is WAF-blocked, but `careers.cpf.gov.sg` proxies the CSB
+  API through its own host — zero-token direct.
+
+**28 companies** remain on websearch fallback — the roadmap in
+`sg-ats-coverage.md` is the priority order to resolve next.
 
 ## Using this repo with the career-ops skill
 

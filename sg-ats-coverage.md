@@ -39,7 +39,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Coda Payments | Lever | `lever.mjs` | jobs.lever.co/Coda | live (24 postings) — **slug is capital-C `Coda`** |
 | Nium | Lever | `lever.mjs` | jobs.lever.co/nium | live |
 | DBS Bank | Workday | `workday.mjs` | dbs.wd3.myworkdayjobs.com/DBS_Careers | live (1,382 postings) |
-| Grab | Workday | `workday.mjs` | grab.wd3.myworkdayjobs.com/en-US/Careers | board live, **0 postings** — ATS-migration blackout per board meta description |
+| Grab | SmartRecruiters (Umbraco branded front) | `smartrecruiters.mjs` | www.grab.careers/en/jobs/ (SR API: `/v1/companies/Grab/postings`; RSS: `/en/jobs/xml/?rss=true`) | live (346 postings, 77 SG) — migrated from Workday; old board dead |
 | Nasdaq | Workday | `workday.mjs` | nasdaq.wd1.myworkdayjobs.com/Global_External_Site | live (184 postings) |
 | PropertyGuru | Workday | `workday.mjs` | propertyguru.wd105.myworkdayjobs.com/en-US/PropertyGuru/ | live (24 postings) |
 | S&P Global | Workday | `workday.mjs` | spgi.wd5.myworkdayjobs.com/SPGI_Careers | live (296 postings) |
@@ -102,14 +102,14 @@ new vendors.
 | Vendor | Provider module | SG companies served | Status |
 |---|---|---|---|
 | Greenhouse | `greenhouse.mjs` | 15 | ✓ direct |
-| Workday | `workday.mjs` | 5 (DBS, Grab, Nasdaq, PropertyGuru, S&P, Visa) | ✓ direct |
+| Workday | `workday.mjs` | 5 (DBS, Nasdaq, PropertyGuru, S&P Global, Visa) | ✓ direct |
 | Lever | `lever.mjs` | 2 | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
 | SuccessFactors | `successfactors.mjs` | 2 (Standard Chartered, CPF Board — both CSB) | ✓ direct; RMK variant needed for SGX |
 | Phenom | `phenom.mjs` | 1 | ✓ direct |
 | Radancy | `radancy.mjs` | 1 | ✓ direct |
 | iCIMS | `icims.mjs` | 1 | ✓ direct |
-| SmartRecruiters | `smartrecruiters.mjs` | 0 (Carousell private id) | gap: needs `local_parser` via Carousell's WP proxy |
+| SmartRecruiters | `smartrecruiters.mjs` | 1 (Grab — public company id) | ✓ direct; Carousell still needs `local_parser` via its WP proxy |
 | SEEK (Jobstreet) | `jobstreet.mjs` | 1 (job board) | ✓ direct, `siteKey: SG-Main` |
 | Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Shopee, … | gap: see roadmap |
 
@@ -179,15 +179,16 @@ expanding career-ops' SG coverage:
    handles it — if not, add the RMK variant.
 2. **Carousell** — SmartRecruiters behind their WordPress proxy; a `local_parser`
    script could call `/wp-content/themes/suki/smartrecruiters/api.php` directly
-   (bypasses the private-company-id 404).
+   (bypasses the private-company-id 404). **Pattern to copy: Grab** — its branded
+   Umbraco front wraps a *public* SR company id (`Grab`), so the plain SR API
+   works zero-token (`/v1/companies/Grab/postings`, `totalFound` matches the
+   site's own RSS feed). If Carousell's id ever turns public, same path.
 3. **GIC, Temasek, OCBC, UOB** — most likely Workday tenants; a tenant URL (e.g. from
    a LinkedIn job link or careers-page footer on another network) unlocks direct
    scanning via the existing `workday.mjs`.
 4. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
    identify ATS, then re-probe.
 5. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
-6. **Grab** — Workday board exists but 0 postings (ATS-migration blackout); re-check
-   periodically, the config is already in place.
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from

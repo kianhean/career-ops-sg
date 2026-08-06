@@ -33,7 +33,10 @@ fails silently and looks like zero openings. Every Direct row must be verified:
 2. Probe the vendor API with the candidate slug, then **verify company
    identity** — never trust a 200:
    - SmartRecruiters `/postings` 200s on ANY slug (not a hit signal — check
-     `/v1/companies/<id>` instead)
+     `/v1/companies/<id>` instead). Live pattern for identity proof (Grab,
+     2026-08-06): a branded site that links to `jobs.smartrecruiters.com/<Id>/`
+     for its apply buttons is SR-backed; confirm by matching posting IDs
+     between the site's own RSS feed and `/v1/companies/<Id>/postings`
    - Lever `/v0/postings/<slug>` can return *another company's* postings
    - Greenhouse `/v1/boards/<slug>` returns the board `name`
 3. Confirm a real job count from a live endpoint, then record it with the
