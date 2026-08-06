@@ -61,9 +61,10 @@ with `siteKey: SG-Main`) under `job_boards`. The other `job_boards` entries
 `{"sessionId":"","search":"<query>","postingCompany":[],"sortBy":["new_posting_date"]}`.
 Response: paginated `results[]` with `metadata.{jobPostId, newPostingDate,
 jobDetailsUrl}`, `postedCompany.{uen,name}`, `salary`, `address.districts`.
-Pagination via `_links.next/page=N`. Needs a board-specific `mycareersfuture.mjs`
-provider upstream (pattern: `jobstreet.mjs`); once it exists, MCF moves under
-`job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
+Pagination via `_links.next/page=N`. Reference provider module ships in this
+repo (`mycareersfuture.mjs` — verified standalone, 849 postings for "software
+engineer" on 2026-08-06); drop it into career-ops `providers/`, then MCF moves
+under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 

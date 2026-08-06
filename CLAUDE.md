@@ -20,6 +20,10 @@ produces the verified ATS knowledge that gets configured upstream.
   reference copies from career-ops. Note: **`providers/` is NOT in this repo**
   — importing scan.mjs or scan-ats-full.mjs fails here because they import
   `./providers/*`. `scan-interamt.mjs` is standalone (Playwright only).
+  `mycareersfuture.mjs` is a **provider module** (career-ops contract
+  `{id, detect, fetch}`), also fully standalone — test it with
+  `node mycareersfuture.mjs --dry-run`; it becomes live once copied into the
+  career-ops `providers/` dir.
 
 ## The one rule: verify, then commit
 

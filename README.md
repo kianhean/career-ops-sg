@@ -82,6 +82,43 @@ node scan.mjs --verify   # scan portals; Playwright-drops expired postings
 scanner — the pattern to copy when a board has no API and the vendor isn't
 covered by a provider module yet.
 
+### 5. Add the MyCareersFuture provider (Singapore's national job board)
+
+**Why:** MyCareersFuture is the government's national jobs portal — every
+public SG vacancy gets posted there, including roles from companies the
+skill doesn't track directly. The skill currently covers it via ×3
+`search_queries` (websearch), which is unreliable. Its search API is public
+and zero-token (verified 2026-08-06: plain POST, no cookies, no auth), so
+it belongs under `job_boards` as a direct board instead.
+
+**How:** the provider module is in this repo — `mycareersfuture.mjs`
+implements the career-ops provider contract (`id` / `detect` / `fetch`) and
+is fully verified here (standalone test: `node mycareersfuture.mjs --dry-run`).
+In the `career-ops` directory, give your AI CLI this prompt:
+
+```text
+Add the MyCareersFuture provider to this install.
+
+Why: MyCareersFuture is Singapore's national job board — every public SG
+vacancy gets posted there, and this install only covers it via the
+MyCareersFuture search_queries, which are websearch and unreliable.
+Its search API is public and zero-token, so it can be a direct job board.
+
+How:
+1. Copy ../career-ops-sg/mycareersfuture.mjs into providers/ — the
+   skill auto-loads any *.mjs dropped there.
+2. Add a job_boards entry in portals.yml:
+     - name: MyCareersFuture
+       careers_url: https://www.mycareersfuture.gov.sg/search
+       provider: mycareersfuture
+       # search: "" for the whole board newest-first, or a query like
+       # "software engineer"; you can also use `queries:` (list) — see
+       # the module header
+3. Remove the MyCareersFuture entries from search_queries.
+4. Run node scan.mjs --dry-run and confirm the MyCareersFuture board
+   returns a real job count (thousands) before saving.
+```
+
 ### 4. Feed verified findings back
 
 When a scan uncovers a new Singapore board, or you resolve a company from
@@ -104,6 +141,7 @@ node scan-interamt.mjs --dry-run   # see each script's header for flags
 | `TODO.md` | Backlog: the 27 websearch-fallback companies to move to Direct, with per-company next steps |
 | `scan.mjs`, `scan-ats-full.mjs` | career-ops scanners (reference copies; require the career-ops `providers/` layer to run) |
 | `scan-interamt.mjs` | Playwright-driven scanner for Interamt.de (Wicket — no REST API); the pattern for WAF'd/JS-only boards |
+| `mycareersfuture.mjs` | **Provider for MyCareersFuture (SG national job board)** — zero-token, verified; drop into career-ops `providers/` |
 
 ## Direct ATS coverage (2026-08-06)
 
