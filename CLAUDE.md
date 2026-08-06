@@ -1,0 +1,71 @@
+# CLAUDE.md
+
+## What this repo is
+
+`career-ops-sg` is the **Singapore ATS coverage expansion** for the
+[career-ops](https://github.com/santifer/career-ops) skill (repo owner:
+santifer/career-ops). It does NOT run the career-ops pipeline itself — it
+produces the verified ATS knowledge that gets configured upstream.
+
+- **The deliverable is `sg-ats-coverage.md`**: every SG/APAC employer tracked
+  by career-ops, its ATS vendor, the provider module that serves it, and
+  verified live status. Every row under **Direct** is a company the skill can
+  scan end-to-end; the **Gap** sections are the expansion targets.
+- The scan scripts (`scan.mjs`, `scan-ats-full.mjs`, `scan-interamt.mjs`) are
+  reference copies from career-ops. Note: **`providers/` is NOT in this repo**
+  — importing scan.mjs or scan-ats-full.mjs fails here because they import
+  `./providers/*`. `scan-interamt.mjs` is standalone (Playwright only).
+
+## The one rule: verify, then commit
+
+Never hand-guess a board slug or tenant into the coverage map — a wrong slug
+fails silently and looks like zero openings. Every Direct row must be verified:
+
+1. Fetch the careers page (`curl -sL` with a browser UA) → grep for ATS
+   markers (myworkdayjobs, sapsf/successfactors, icims, smartrecruiters,
+   greenhouse, ashbyhq, lever.co, radancy, workable, avature, phenom…).
+   SPAs show nothing — a JS shell with no markers means "unknown", not "direct".
+2. Probe the vendor API with the candidate slug, then **verify company
+   identity** — never trust a 200:
+   - SmartRecruiters `/postings` 200s on ANY slug (not a hit signal — check
+     `/v1/companies/<id>` instead)
+   - Lever `/v0/postings/<slug>` can return *another company's* postings
+   - Greenhouse `/v1/boards/<slug>` returns the board `name`
+3. Confirm a real job count from a live endpoint, then record it with the
+   exact endpoint so the provider can be configured upstream.
+
+## SuccessFactors gotchas (learned live)
+
+- Raw `*.sapsf.com` instances answer **403 (WAF)** from this network.
+- **The branded careers domain often proxies the CSB API through its own
+  host** — always probe `https://<branded-domain>/services/recruiting/v1/jobs`
+  before declaring a board WAF-blocked. CPF Board is the live example:
+  `career44.sapsf.com/services/recruiting/v1/jobs` 403s,
+  `careers.cpf.gov.sg/services/recruiting/v1/jobs` returns 200 from plain
+  curl (no cookies, no CSRF token).
+- Two API variants: **CSB** (`POST /services/recruiting/v1/jobs` — Standard
+  Chartered, CPF Board) and **RMK** (`GET /tile-search-results/` — SGX).
+- Workday gotcha: a tenant may 500 on every site name on one instance while
+  the real board lives on another instance (`visa.wd5` vs `visa.wd1`).
+
+## Conventions
+
+- Coverage doc provenance line states the verification date; per-row "verified
+  state" notes the job count seen at verify time.
+- Roadmap order = priority order for resolving Websearch → Direct companies.
+- Scanners that need special handling (WAF, JS-only, no REST API) follow the
+  `scan-interamt.mjs` pattern: self-contained script, dry-run by default,
+  title/location filters from `portals.yml`.
+- Zero-token is the design goal: direct API calls, no LLM for fetching.
+
+## Common tasks
+
+- **Probe a new company**: follow the verify steps above, then update
+  `sg-ats-coverage.md` (Direct table + vendor matrix + gotchas if you learned
+  something new).
+- **Resolve a roadmap item**: SGX (try the branded-domain proxy trick),
+  Carousell (SmartRecruiters behind WordPress proxy), GIC/Temasek/OCBC/UOB
+  (likely Workday — need a tenant URL).
+- **Run a scanner**: `node scan-interamt.mjs --dry-run` etc. — see each
+  script's header. `scan.mjs` needs the career-ops `providers/` layer, which
+  is not in this repo.
