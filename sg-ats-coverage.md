@@ -15,7 +15,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (30 companies, 10 vendors)
+## Direct ATS (31 companies, 10 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -47,6 +47,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | MSCI | iCIMS | `icims.mjs` | globalcareers-msci.icims.com | live (93 postings) |
 | Standard Chartered | SuccessFactors (CSB) | `successfactors.mjs` | jobs.standardchartered.com/ (`provider: successfactors`) | live (697 postings; first posting already a SG role) |
 | CPF Board | SuccessFactors (CSB) | `successfactors.mjs` | careers.cpf.gov.sg/search/?q=& (`provider: successfactors`) | live (23 postings; CSB API reachable directly at careers.cpf.gov.sg — see gotchas) |
+| SGX | SuccessFactors (J2W server-rendered) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.sgx.com/search/?q=& | live (25 postings, all SG) — server-rendered search, `startrow` pagination; CSB API on branded host is 401 auth-gated (see gotchas) |
 | BlackRock | Radancy (TalentBrew) | `radancy.mjs` | careers.blackrock.com/en/search-jobs (`provider: radancy`) | live (280 postings) |
 | Mastercard | Phenom (fronting Workday) | `phenom.mjs` | careers.mastercard.com (`provider: phenom`) | live (1,129 postings; SG roles prominent) |
 
@@ -73,7 +74,7 @@ new vendors.
 | Workday | `workday.mjs` | 5 (DBS, Nasdaq, PropertyGuru, S&P Global, Visa) | ✓ direct |
 | Lever | `lever.mjs` | 2 | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
-| SuccessFactors | `successfactors.mjs` | 2 (Standard Chartered, CPF Board — both CSB) | ✓ direct; RMK variant needed for SGX |
+| SuccessFactors | `successfactors.mjs` | 3 (Standard Chartered, CPF Board — CSB; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX |
 | Phenom | `phenom.mjs` | 1 | ✓ direct |
 | Radancy | `radancy.mjs` | 1 | ✓ direct |
 | iCIMS | `icims.mjs` | 1 | ✓ direct |
@@ -132,31 +133,33 @@ list the same req id on two pages (1637 on 2026-08-06) — dedup by req id.
 **Probe the branded domain's `/services/recruiting/v1/jobs` before declaring a
 SuccessFactors board WAF-blocked.**
 
+But the proxy is not always open: **SGX's** branded host proxies the CSB
+endpoint yet answers **401 auth-gated** (`careers.sgx.com/services/recruiting/v1/jobs`
+→ 401; CPF's → 200 open). SGX works zero-token anyway, because the J2W
+**search page itself is server-rendered**: `GET /search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=<0,10,20…>`
+returns the jobs directly in HTML (`/job/<Location>-<slug>/<reqid>/` links,
+pagination via `startrow`), and detail pages carry a `Posted` meta date.
+So for every J2W tenant: try the CSB API on the branded host first, and if it
+401s, fall back to parsing the server-rendered search page — no WAF can block
+the page the applicant actually reads.
+
 ## Expansion roadmap (next candidates to resolve)
 
 Priority order — these are the SG companies that move from Websearch → Direct,
 expanding career-ops' SG coverage:
 
-1. **SGX** — SuccessFactors board confirmed (RMK variant: `career10.successfactors.com`,
-   company=SGX); CSB POST 403s from this network (WAF). Retry from a different
-   network/IP, or drive it with Playwright like `scan-interamt.mjs`. **Also try the
-   CPF trick first: if SGX has a branded careers domain, probe its
-   `/services/recruiting/v1/jobs` — the branded host may proxy the API through its
-   own WAF allowance** (CPF Board is a live example of exactly this). Once verified,
-   test whether the existing `successfactors.mjs` RMK path (`GET /tile-search-results/`)
-   handles it — if not, add the RMK variant.
-2. **Carousell** — SmartRecruiters behind their WordPress proxy; a `local_parser`
+1. **Carousell** — SmartRecruiters behind their WordPress proxy; a `local_parser`
    script could call `/wp-content/themes/suki/smartrecruiters/api.php` directly
    (bypasses the private-company-id 404). **Pattern to copy: Grab** — its branded
    Umbraco front wraps a *public* SR company id (`Grab`), so the plain SR API
    works zero-token (`/v1/companies/Grab/postings`, `totalFound` matches the
    site's own RSS feed). If Carousell's id ever turns public, same path.
-3. **GIC, Temasek, OCBC, UOB** — most likely Workday tenants; a tenant URL (e.g. from
+2. **GIC, Temasek, OCBC, UOB** — most likely Workday tenants; a tenant URL (e.g. from
    a LinkedIn job link or careers-page footer on another network) unlocks direct
    scanning via the existing `workday.mjs`.
-4. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
+3. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
    identify ATS, then re-probe.
-5. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
+4. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from

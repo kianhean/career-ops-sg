@@ -45,7 +45,7 @@ like zero openings — never hand-guess a board into the coverage map.
 
 ## Direct ATS coverage (2026-08-06)
 
-30 companies across 10 ATS vendors, plus one job board. Canonical source with
+31 companies across 10 ATS vendors, plus one job board. Canonical source with
 verified board URLs: `sg-ats-coverage.md`.
 
 | Vendor | career-ops provider | Companies |
@@ -54,7 +54,7 @@ verified board URLs: `sg-ats-coverage.md`.
 | Workday | `workday.mjs` | DBS Bank, Nasdaq, PropertyGuru, S&P Global, Visa |
 | Lever | `lever.mjs` | Coda Payments, Nium |
 | Ashby | `ashby.mjs` | Airwallex, Confluent |
-| SuccessFactors | `successfactors.mjs` | CPF Board, Standard Chartered |
+| SuccessFactors | `successfactors.mjs` | CPF Board, Standard Chartered, SGX |
 | SmartRecruiters | `smartrecruiters.mjs` | Grab |
 | iCIMS | `icims.mjs` | MSCI |
 | Radancy | `radancy.mjs` | BlackRock |
@@ -69,8 +69,11 @@ Recent additions:
 - **CPF Board** (2026-08-06) — **SuccessFactors CSB**, 23 postings. The raw
   sapsf.com instance is WAF-blocked, but `careers.cpf.gov.sg` proxies the CSB
   API through its own host — zero-token direct.
+- **SGX** (2026-08-06) — **SuccessFactors J2W**, 25 postings (all SG). The CSB
+  API on the branded host is 401 auth-gated (unlike CPF's), but the J2W search
+  page is server-rendered with `startrow` pagination — zero-token direct.
 
-**28 companies** remain on websearch fallback — see **`TODO.md`** (the full
+**27 companies** remain on websearch fallback — see **`TODO.md`** (the full
 backlog with per-company next steps) and the expansion roadmap in
 `sg-ats-coverage.md` for priority order.
 

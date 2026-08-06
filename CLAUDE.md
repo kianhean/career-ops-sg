@@ -51,8 +51,16 @@ fails silently and looks like zero openings. Every Direct row must be verified:
   `career44.sapsf.com/services/recruiting/v1/jobs` 403s,
   `careers.cpf.gov.sg/services/recruiting/v1/jobs` returns 200 from plain
   curl (no cookies, no CSRF token).
-- Two API variants: **CSB** (`POST /services/recruiting/v1/jobs` — Standard
-  Chartered, CPF Board) and **RMK** (`GET /tile-search-results/` — SGX).
+- The proxy is not always open: SGX's branded host answers **401 auth-gated**
+  (`careers.sgx.com/services/recruiting/v1/jobs` → 401; CPF's → 200). When the
+  CSB API is gated, fall back to the **J2W server-rendered search page**:
+  `GET /search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=<0,10,20…>`
+  returns the jobs in plain HTML (`/job/<Location>-<slug>/<reqid>/` links,
+  pagination via `startrow`), and detail pages carry a `Posted` meta date —
+  no WAF can block the page the applicant reads (SGX, 2026-08-06: 25 postings).
+- Three API variants: **CSB** (`POST /services/recruiting/v1/jobs` — Standard
+  Chartered, CPF Board), **RMK** (`GET /tile-search-results/`), and **J2W**
+  (server-rendered search page — SGX).
 - Workday gotcha: a tenant may 500 on every site name on one instance while
   the real board lives on another instance (`visa.wd5` vs `visa.wd1`).
 
@@ -73,9 +81,8 @@ fails silently and looks like zero openings. Every Direct row must be verified:
 - **Probe a new company**: follow the verify steps above, then update
   `sg-ats-coverage.md` (Direct table + vendor matrix + gotchas if you learned
   something new).
-- **Resolve a roadmap item**: SGX (try the branded-domain proxy trick),
-  Carousell (SmartRecruiters behind WordPress proxy), GIC/Temasek/OCBC/UOB
-  (likely Workday — need a tenant URL).
+- **Resolve a roadmap item**: Carousell (SmartRecruiters behind WordPress
+  proxy), GIC/Temasek/OCBC/UOB (likely Workday — need a tenant URL).
 - **Run a scanner**: `node scan-interamt.mjs --dry-run` etc. — see each
   script's header. `scan.mjs` needs the career-ops `providers/` layer, which
   is not in this repo.

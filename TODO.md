@@ -1,6 +1,6 @@
 # TODO — Websearch fallback → Direct
 
-The 28 SG/APAC companies that still scan via websearch fallback
+The 27 SG/APAC companies that still scan via websearch fallback
 (`scan_query`) instead of a zero-token ATS provider. Each row records what
 was tried and why the board isn't direct yet — the "Known ATS / why not
 direct" column IS the next step. When a company gets resolved, move it to
@@ -28,7 +28,6 @@ Priority order for tackling these: the **Expansion roadmap** section in
 | Hudson River Trading | Greenhouse board exists but is **talent-community only** (campus listings); real board is custom ATS |
 | DRW | no markers; gh `drw`/`drwgroup` absent |
 | Citadel Securities | JS shell; gh `citadel` (0 postings)/`citadelsec`/`citadelsecurities` absent |
-| SGX | **SuccessFactors RMK confirmed** (career10.successfactors.com, company=SGX) but CSB API is WAF-blocked (403) from this network |
 | FactSet | `careers.factset.com` **DNS-unresolvable** from this network — ATS unknown |
 | Bloomberg | small page, no markers — custom recruiting system |
 | LSEG | `careers.lseg.com` **DNS-unresolvable** from this network — ATS unknown |
