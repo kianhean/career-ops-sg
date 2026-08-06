@@ -25,6 +25,7 @@ This repo is that knowledge base, in one place:
 | File | Purpose |
 |---|---|
 | `sg-ats-coverage.md` | **The deliverable** — SG ATS coverage map, verification method, vendor matrix, expansion roadmap |
+| `TODO.md` | Backlog: the 28 websearch-fallback companies to move to Direct, with per-company next steps |
 | `scan.mjs`, `scan-ats-full.mjs` | career-ops scanners (reference copies; require the career-ops `providers/` layer to run) |
 | `scan-interamt.mjs` | Playwright-driven scanner for Interamt.de (Wicket — no REST API); the pattern for WAF'd/JS-only boards |
 
@@ -69,8 +70,9 @@ Recent additions:
   sapsf.com instance is WAF-blocked, but `careers.cpf.gov.sg` proxies the CSB
   API through its own host — zero-token direct.
 
-**28 companies** remain on websearch fallback — the roadmap in
-`sg-ats-coverage.md` is the priority order to resolve next.
+**28 companies** remain on websearch fallback — see **`TODO.md`** (the full
+backlog with per-company next steps) and the expansion roadmap in
+`sg-ats-coverage.md` for priority order.
 
 ## Using this repo with the career-ops skill
 
@@ -134,11 +136,12 @@ covered by a provider module yet.
 
 ### 4. Feed verified findings back
 
-When a scan uncovers a new Singapore board, or you resolve a company from the
-Websearch fallback table, verify it (see "How a company moves to Direct") and
-**commit the updated row to `sg-ats-coverage.md`**. The career-ops install runs
-from ephemeral containers — nothing persists uncommitted, and the prompt in
-step 2 is only as good as this repo's coverage map.
+When a scan uncovers a new Singapore board, or you resolve a company from
+`TODO.md`, verify it (see "How a company moves to Direct") and **commit the
+updated row to `sg-ats-coverage.md`** — removing it from the backlog. The
+career-ops install runs from ephemeral containers — nothing persists
+uncommitted, and the prompt in step 2 is only as good as this repo's coverage
+map.
 
 Also run a scanner here for special-handling boards:
 

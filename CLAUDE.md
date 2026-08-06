@@ -60,7 +60,9 @@ fails silently and looks like zero openings. Every Direct row must be verified:
 
 - Coverage doc provenance line states the verification date; per-row "verified
   state" notes the job count seen at verify time.
-- Roadmap order = priority order for resolving Websearch → Direct companies.
+- The websearch-fallback backlog lives in **TODO.md** (per-company next
+  steps); the coverage doc keeps a short pointer to it. Roadmap order in
+  sg-ats-coverage.md = priority order for resolving Websearch → Direct.
 - Scanners that need special handling (WAF, JS-only, no REST API) follow the
   `scan-interamt.mjs` pattern: self-contained script, dry-run by default,
   title/location filters from `portals.yml`.
