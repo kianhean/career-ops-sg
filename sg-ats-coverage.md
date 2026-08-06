@@ -55,6 +55,16 @@ Also direct: **Jobstreet Singapore** (job board, SEEK v5 API, `provider: jobstre
 with `siteKey: SG-Main`) under `job_boards`. The other `job_boards` entries
 (SolidJobs IT etc.) are API-direct but Polish-market/disabled.
 
+**MyCareersFuture** (SG national job board) — public API verified live
+(2026-08-06), zero-token from plain curl, no cookies/CSRF:
+`POST https://api.mycareersfuture.gov.sg/v2/search?limit=20&page=0` with body
+`{"sessionId":"","search":"<query>","postingCompany":[],"sortBy":["new_posting_date"]}`.
+Response: paginated `results[]` with `metadata.{jobPostId, newPostingDate,
+jobDetailsUrl}`, `postedCompany.{uen,name}`, `salary`, `address.districts`.
+Pagination via `_links.next/page=N`. Needs a board-specific `mycareersfuture.mjs`
+provider upstream (pattern: `jobstreet.mjs`); once it exists, MCF moves under
+`job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
+
 ## Backlog
 
 The 28 websearch-fallback companies and the `search_queries` boards now live

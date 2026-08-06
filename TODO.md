@@ -40,7 +40,12 @@ Priority order for tackling these: the **Expansion roadmap** section in
 | NBIM | no markers |
 | NETS | no markers; SR slugs absent |
 
-Also websearch: the boards in `search_queries` (MyCareersFuture ×3, LinkedIn ×3,
-Nodeflair ×2, Tech in Asia, Glints, RemoteOK, Remotive ×2, WeWorkRemotely ×2,
-Himalayas, Working Nomads, Greenhouse/Ashby/Lever APAC cross-portal discovery ×6,
+Also websearch: the boards in `search_queries` (LinkedIn ×3, Nodeflair ×2,
+Tech in Asia, Glints, RemoteOK, Remotive ×2, WeWorkRemotely ×2, Himalayas,
+Working Nomads, Greenhouse/Ashby/Lever APAC cross-portal discovery ×6,
 HN Who's Hiring).
+
+**MyCareersFuture ×3**: API verified direct zero-token (2026-08-06) —
+`POST api.mycareersfuture.gov.sg/v2/search` (see sg-ats-coverage.md "Also
+direct"). Only needs a `mycareersfuture.mjs` provider in career-ops; then
+these three `search_queries` entries retire under `job_boards`.
