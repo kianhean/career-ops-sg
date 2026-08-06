@@ -2,80 +2,25 @@
 
 Singapore ATS coverage expansion for the [career-ops](https://github.com/santifer/career-ops) skill.
 
-## Goal
+## Why this repo exists
 
-**Move Singapore/APAC employers from "websearch fallback" to "direct, zero-token
-scanning"** in career-ops. career-ops scans job boards through provider modules
-(`providers/*.mjs`) — one per ATS vendor (Greenhouse, Workday, Lever, Ashby,
-SuccessFactors, …). The vendor layer exists; the gap is at the **company level**:
-knowing which tenant/slug/endpoint each Singapore employer actually runs on.
+career-ops scans a company's job board one of two ways:
 
-This repo is that knowledge base, in one place:
+- **Direct ATS** — the skill talks to the vendor's own job API or
+  server-rendered board (Greenhouse, Workday, Lever, SuccessFactors, …).
+  Reliable: live results, exact matches, zero tokens.
+- **Websearch fallback** — the skill runs a web query for the company's
+  openings. **Not reliable**: results lag the real board, miss postings, and
+  can surface stale or wrong jobs.
 
-- **`sg-ats-coverage.md`** — the coverage map: every tracked SG/APAC employer,
-  its ATS vendor, the career-ops provider that serves it, and verified live
-  status. "Direct" rows scan end-to-end today; the **Gap** sections are the
-  expansion targets.
-- **Scan scripts** — working reference implementations for boards that need
-  special handling (Playwright-driven, WAF-blocked, or unusual ATS setups),
-  copied from career-ops so they can be developed and verified here.
+Most Singapore employers were stuck on websearch fallback — a direct scan only
+works when you know the ATS vendor **and** the exact board URL, and nobody had
+verified that for SG companies. **This repo closes that gap**: a verified map
+of every tracked SG/APAC employer → its ATS vendor → the working board URL, so
+career-ops scans Singapore directly instead of searching the web.
 
-## Contents
-
-| File | Purpose |
-|---|---|
-| `sg-ats-coverage.md` | **The deliverable** — SG ATS coverage map, verification method, vendor matrix, expansion roadmap |
-| `TODO.md` | Backlog: the 28 websearch-fallback companies to move to Direct, with per-company next steps |
-| `scan.mjs`, `scan-ats-full.mjs` | career-ops scanners (reference copies; require the career-ops `providers/` layer to run) |
-| `scan-interamt.mjs` | Playwright-driven scanner for Interamt.de (Wicket — no REST API); the pattern for WAF'd/JS-only boards |
-
-## How a company moves to Direct
-
-1. Fetch the careers page, grep for ATS vendor markers (`myworkdayjobs`,
-   `sapsf`, `icims`, `greenhouse`, …).
-2. Probe the vendor's public API with the candidate tenant/slug.
-3. **Verify identity** — never trust a 200 alone (SmartRecruiters `/postings`
-   200s on any slug; Lever can return another company's postings).
-4. Confirm end-to-end: the board returns a real job count.
-5. Record the verified entry in `sg-ats-coverage.md` (Direct table + matrix),
-   with the exact endpoint so the provider can be configured upstream.
-
-Rule of thumb: **verify, then commit.** A wrong slug fails silently and looks
-like zero openings — never hand-guess a board into the coverage map.
-
-## Direct ATS coverage (2026-08-06)
-
-31 companies across 10 ATS vendors, plus one job board. Canonical source with
-verified board URLs: `sg-ats-coverage.md`.
-
-| Vendor | career-ops provider | Companies |
-|---|---|---|
-| Greenhouse | `greenhouse.mjs` | Adyen, Cloudflare, Datadog, Elastic, Flow Traders, GitLab, IMC Trading, Jane Street, Jump Trading, MongoDB, Optiver, Squarepoint Capital, Stripe, Thunes, Tower Research Capital |
-| Workday | `workday.mjs` | DBS Bank, Nasdaq, PropertyGuru, S&P Global, Visa |
-| Lever | `lever.mjs` | Coda Payments, Nium |
-| Ashby | `ashby.mjs` | Airwallex, Confluent |
-| SuccessFactors | `successfactors.mjs` | CPF Board, Standard Chartered, SGX |
-| SmartRecruiters | `smartrecruiters.mjs` | Grab |
-| iCIMS | `icims.mjs` | MSCI |
-| Radancy | `radancy.mjs` | BlackRock |
-| Phenom | `phenom.mjs` | Mastercard |
-| SEEK (job board) | `jobstreet.mjs` | Jobstreet Singapore (`siteKey: SG-Main`) |
-
-Recent additions:
-
-- **Grab** (2026-08-06) — moved from Workday to **SmartRecruiters** (branded
-  Umbraco front at grab.careers, public company id `Grab`). Live: 346 postings,
-  77 in Singapore; API and RSS feed both verified zero-token.
-- **CPF Board** (2026-08-06) — **SuccessFactors CSB**, 23 postings. The raw
-  sapsf.com instance is WAF-blocked, but `careers.cpf.gov.sg` proxies the CSB
-  API through its own host — zero-token direct.
-- **SGX** (2026-08-06) — **SuccessFactors J2W**, 25 postings (all SG). The CSB
-  API on the branded host is 401 auth-gated (unlike CPF's), but the J2W search
-  page is server-rendered with `startrow` pagination — zero-token direct.
-
-**27 companies** remain on websearch fallback — see **`TODO.md`** (the full
-backlog with per-company next steps) and the expansion roadmap in
-`sg-ats-coverage.md` for priority order.
+Every row in the Direct table below was verified live before being committed.
+If it's listed, the skill can scan it end-to-end today.
 
 ## Using this repo with the career-ops skill
 
@@ -140,14 +85,76 @@ covered by a provider module yet.
 ### 4. Feed verified findings back
 
 When a scan uncovers a new Singapore board, or you resolve a company from
-`TODO.md`, verify it (see "How a company moves to Direct") and **commit the
-updated row to `sg-ats-coverage.md`** — removing it from the backlog. The
-career-ops install runs from ephemeral containers — nothing persists
-uncommitted, and the prompt in step 2 is only as good as this repo's coverage
-map.
+`TODO.md`, verify it (see the technical notes below) and **commit the updated
+row to `sg-ats-coverage.md`** — removing it from the backlog. The career-ops
+install runs from ephemeral containers — nothing persists uncommitted, and the
+prompt in step 2 is only as good as this repo's coverage map.
 
 Also run a scanner here for special-handling boards:
 
 ```sh
 node scan-interamt.mjs --dry-run   # see each script's header for flags
 ```
+
+## Contents
+
+| File | Purpose |
+|---|---|
+| `sg-ats-coverage.md` | **The deliverable** — SG ATS coverage map, verification method, vendor matrix, expansion roadmap |
+| `TODO.md` | Backlog: the 27 websearch-fallback companies to move to Direct, with per-company next steps |
+| `scan.mjs`, `scan-ats-full.mjs` | career-ops scanners (reference copies; require the career-ops `providers/` layer to run) |
+| `scan-interamt.mjs` | Playwright-driven scanner for Interamt.de (Wicket — no REST API); the pattern for WAF'd/JS-only boards |
+
+## Direct ATS coverage (2026-08-06)
+
+31 companies across 10 ATS vendors, plus one job board. Canonical source with
+verified board URLs: `sg-ats-coverage.md`.
+
+| Vendor | career-ops provider | Companies |
+|---|---|---|
+| Greenhouse | `greenhouse.mjs` | Adyen, Cloudflare, Datadog, Elastic, Flow Traders, GitLab, IMC Trading, Jane Street, Jump Trading, MongoDB, Optiver, Squarepoint Capital, Stripe, Thunes, Tower Research Capital |
+| Workday | `workday.mjs` | DBS Bank, Nasdaq, PropertyGuru, S&P Global, Visa |
+| Lever | `lever.mjs` | Coda Payments, Nium |
+| Ashby | `ashby.mjs` | Airwallex, Confluent |
+| SuccessFactors | `successfactors.mjs` | CPF Board, Standard Chartered, SGX |
+| SmartRecruiters | `smartrecruiters.mjs` | Grab |
+| iCIMS | `icims.mjs` | MSCI |
+| Radancy | `radancy.mjs` | BlackRock |
+| Phenom | `phenom.mjs` | Mastercard |
+| SEEK (job board) | `jobstreet.mjs` | Jobstreet Singapore (`siteKey: SG-Main`) |
+
+Recent additions:
+
+- **Grab** (2026-08-06) — moved from Workday to **SmartRecruiters** (branded
+  Umbraco front at grab.careers, public company id `Grab`). Live: 346 postings,
+  77 in Singapore; API and RSS feed both verified zero-token.
+- **CPF Board** (2026-08-06) — **SuccessFactors CSB**, 23 postings. The raw
+  sapsf.com instance is WAF-blocked, but `careers.cpf.gov.sg` proxies the CSB
+  API through its own host — zero-token direct.
+- **SGX** (2026-08-06) — **SuccessFactors J2W**, 25 postings (all SG). The CSB
+  API on the branded host is 401 auth-gated (unlike CPF's), but the J2W search
+  page is server-rendered with `startrow` pagination — zero-token direct.
+
+**27 companies** remain on websearch fallback — see **`TODO.md`** (the full
+backlog with per-company next steps) and the expansion roadmap in
+`sg-ats-coverage.md` for priority order.
+
+## Technical notes — how a company gets verified
+
+The jargon-heavy part, for when you're adding or resolving a company yourself.
+career-ops scans boards through provider modules (`providers/*.mjs`) — one per
+ATS vendor (Greenhouse, Workday, Lever, Ashby, SuccessFactors, …). The vendor
+layer exists; the gap is at the **company level**: knowing which
+tenant/slug/endpoint each Singapore employer actually runs on.
+
+1. Fetch the careers page (`curl -sL` with a browser UA), grep for ATS vendor
+   markers (`myworkdayjobs`, `sapsf`, `icims`, `greenhouse`, …).
+2. Probe the vendor's public API with the candidate tenant/slug.
+3. **Verify identity** — never trust a 200 alone (SmartRecruiters `/postings`
+   200s on any slug; Lever can return another company's postings).
+4. Confirm end-to-end: the board returns a real job count.
+5. Record the verified entry in `sg-ats-coverage.md` (Direct table + matrix),
+   with the exact endpoint so the provider can be configured upstream.
+
+Rule of thumb: **verify, then commit.** A wrong slug fails silently and looks
+like zero openings — never hand-guess a board into the coverage map.
