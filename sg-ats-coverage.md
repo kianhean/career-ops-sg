@@ -38,7 +38,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Confluent | Ashby | `ashby.mjs` | jobs.ashbyhq.com/confluent | live |
 | Coda Payments | Lever | `lever.mjs` | jobs.lever.co/Coda | live (24 postings) — **slug is capital-C `Coda`** |
 | Nium | Lever | `lever.mjs` | jobs.lever.co/nium | live |
-| DBS Bank | Workday | `workday.mjs` | dbs.wd3.myworkdayjobs.com/DBS_Careers | live (1,364 postings) |
+| DBS Bank | Workday | `workday.mjs` | dbs.wd3.myworkdayjobs.com/DBS_Careers | live (1,382 postings) |
 | Grab | Workday | `workday.mjs` | grab.wd3.myworkdayjobs.com/en-US/Careers | board live, **0 postings** — ATS-migration blackout per board meta description |
 | Nasdaq | Workday | `workday.mjs` | nasdaq.wd1.myworkdayjobs.com/Global_External_Site | live (184 postings) |
 | PropertyGuru | Workday | `workday.mjs` | propertyguru.wd105.myworkdayjobs.com/en-US/PropertyGuru/ | live (24 postings) |
