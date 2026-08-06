@@ -158,3 +158,32 @@ tenant/slug/endpoint each Singapore employer actually runs on.
 
 Rule of thumb: **verify, then commit.** A wrong slug fails silently and looks
 like zero openings — never hand-guess a board into the coverage map.
+
+## Contributing
+
+The repo's value is trust: every Direct row is verified before it lands.
+Contributions are welcome — PRs and issues both.
+
+**Ways to contribute:**
+
+- Verify a new Singapore employer and add it to the Direct table.
+- Resolve a company from the backlog in `TODO.md` (priority order is in the
+  expansion roadmap in `sg-ats-coverage.md`).
+- Fix or expand a gotcha, or improve the scan scripts.
+
+**How to raise a PR:**
+
+1. Fork the repo, branch off `main`.
+2. Follow "how a company gets verified" (above) — never hand-guess a board
+   URL into the coverage map.
+3. Keep the machine-parseable contract: one company per row, exact board
+   URLs, provider = module name without `.mjs`. A new Direct row must update
+   `sg-ats-coverage.md` (Direct table + vendor matrix) **and** be removed
+   from `TODO.md`.
+4. Note the verified state in the row (job count seen at verify time).
+5. Open the PR against `main`. Keep the diff small; in the description,
+   say what you verified and how.
+
+**Issues** — report a board that's gone stale (direct rows do drift), a wrong
+vendor mapping, or a company you can't identify. Include the careers URL you
+looked at, so the report is actionable without re-fetching.
