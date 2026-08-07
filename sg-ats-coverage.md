@@ -9,13 +9,15 @@ targets.
 
 Data provenance: verified 2026-08-06 against `career-search` repo
 (`portals.yml → tracked_companies`, every entry end-to-end tested with
-`node scan.mjs --company "<name>"`).
+`node scan.mjs --company "<name>"`); OCBC, FactSet, LSEG rows added
+2026-08-07 (see roadmap "Resolved 2026-08-07" for how the earlier
+DNS-blocked/Taleo guesses turned out to be stale, not network-limited).
 
 Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websearch).
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (35 companies, 10 vendors)
+## Direct ATS (38 companies, 10 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -45,6 +47,9 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | PropertyGuru | Workday | `workday.mjs` | propertyguru.wd105.myworkdayjobs.com/en-US/PropertyGuru/ | live (24 postings) |
 | S&P Global | Workday | `workday.mjs` | spgi.wd5.myworkdayjobs.com/SPGI_Careers | live (296 postings) |
 | Visa | Workday | `workday.mjs` | visa.wd5.myworkdayjobs.com/Visa | live (772 postings) — the **wd5** tenant; `visa.wd1` 500s on every site name |
+| OCBC | Workday | `workday.mjs` | ocbc.wd102.myworkdayjobs.com/External | live (989 postings, incl. OCBC Singapore, OCBC Malaysia, Bank of Singapore reqs) — **not Taleo**; bank migrated off `ocbc.taleo.net` (now globally NXDOMAIN) |
+| FactSet | Workday | `workday.mjs` | factset.wd108.myworkdayjobs.com/FactSetCareers | live (63 postings) — the **wd108** tenant; `factset.wd1` returns HTTP_422 on every payload |
+| LSEG | Workday | `workday.mjs` | lseg.wd3.myworkdayjobs.com/Careers | live (792 postings, 18 matching "Singapore") — site is `Careers`, not `Graduate_Careers` (5 postings, campus-only) |
 | MSCI | iCIMS | `icims.mjs` | globalcareers-msci.icims.com | live (93 postings) |
 | Standard Chartered | SuccessFactors (CSB) | `successfactors.mjs` | jobs.standardchartered.com/ (`provider: successfactors`) | live (697 postings; first posting already a SG role) |
 | CPF Board | SuccessFactors (CSB) | `successfactors.mjs` | careers.cpf.gov.sg/search/?q=& (`provider: successfactors`) | live (23 postings; CSB API reachable directly at careers.cpf.gov.sg — see gotchas) |
@@ -72,7 +77,7 @@ under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 
-The 24 websearch-fallback companies and the `search_queries` boards now live
+The 20 websearch-fallback companies and the `search_queries` boards now live
 in **`TODO.md`** — the "Known ATS / why not direct" notes there are the next
 steps. Resolved companies move back here as Direct rows.
 
@@ -86,7 +91,7 @@ new vendors.
 | Vendor | Provider module | SG companies served | Status |
 |---|---|---|---|
 | Greenhouse | `greenhouse.mjs` | 15 | ✓ direct |
-| Workday | `workday.mjs` | 6 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa) | ✓ direct |
+| Workday | `workday.mjs` | 9 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa, OCBC, FactSet, LSEG) | ✓ direct |
 | Lever | `lever.mjs` | 3 (Coda Payments, Ninja Van, Nium) | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
 | SuccessFactors | `successfactors.mjs` | 5 (Standard Chartered, CPF Board — CSB; GIC, NETS — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS |
@@ -125,6 +130,20 @@ not `visa.wd1` (which 500s). And a brand's obvious domain may not exist:
 `careers.visa.com` is NXDOMAIN — the branded front is `corporate.visa.com/en/jobs/`,
 which embeds the Workday link. Probe the branded jobs page for the embed; don't
 guess the tenant from the brand.
+
+A `careers.<company>.com` DNS failure is not proof the ATS is blocked or
+unknown — verify with a public DoH resolver (`https://dns.google/resolve?name=...`)
+before writing a company off as network-blocked. FactSet and LSEG were both
+logged 2026-08-06 as "DNS-unresolvable from this network"; re-checked
+2026-08-07, `careers.factset.com` and `careers.lseg.com` are NXDOMAIN
+*globally* — those subdomains never existed. Both companies' real career
+sites are plain `*.myworkdayjobs.com` tenants (`factset.wd108`, `lseg.wd3`,
+site `Careers`) linked from ordinary marketing pages (`factset.com/careers`,
+`lseg.com/en/careers`). Same pattern caught OCBC: the Taleo board logged
+2026-08-06 (`ocbc.taleo.net`) is NXDOMAIN globally too — not blocked, gone.
+The bank migrated to Workday (`ocbc.wd102`) and the doc's ATS guess was stale,
+not network-limited. Lesson: always search for the current careers page
+before trusting an old vendor guess or a DNS failure as "still blocked".
 
 ## SuccessFactors gotchas seen live
 
@@ -171,29 +190,40 @@ returns jobs as HTML tiles. Same `startrow` pagination pattern as SGX; the
 Priority order — these are the SG companies that move from Websearch → Direct,
 expanding career-ops' SG coverage:
 
-1. **OCBC** — confirmed **Oracle Taleo** at `ocbc.taleo.net/careersection/ocbc_external/jobsearch.ftl`
-   (from careers page), but `ocbc.taleo.net` DNS-unresolvable from this network.
-   Taleo not in career-ops provider list; would need a new provider module.
-2. **GIC, Temasek** — GIC resolved (SuccessFactors RMK, above). Temasek:
-   `www.temasek.com.sg` is **403 WAF-blocked** entirely from this network; ATS unknown.
-3. **OCBC, UOB** — UOB resolved (Workday, above). OCBC: Taleo, DNS blocked (see #1).
-4. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
-   identify ATS, then re-probe.
-5. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
-6. **NBIM** — confirmed **Webcruiter** (`398280.webcruiter.no`, Nordic ATS); no
+1. **Temasek** — `www.temasek.com.sg` itself is 403 WAF-blocked, but the real
+   careers portal lives off-domain: **SAP SuccessFactors** RCM/CSB 2.0 career
+   site at `career2.successfactors.eu/career?company=temasekcapP2` (verified
+   2026-08-07, HTTP 200 from plain curl). Not a simple REST board though —
+   the job search widget (`getInitialJobSearchData`) is wired through the
+   classic SF `AjaxService`/JSF ViewState postback pattern, not a bare JSON
+   endpoint like the CSB/RMK/J2W variants already supported. Needs either the
+   real XHR payload captured from a browser session, or a headless-browser
+   scan like `scan-interamt.mjs`.
+2. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
+3. **NBIM** — confirmed **Webcruiter** (`398280.webcruiter.no`, Nordic ATS); no
    existing provider module; would need a new provider.
-7. **Fullerton Fund Management** — jobs are **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`);
+4. **Fullerton Fund Management** — jobs are **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`);
    not zero-token scannable.
-8. **Wise** — **SmartRecruiters Attrax** custom career site (`wise.jobs`);
+5. **Wise** — **SmartRecruiters Attrax** custom career site (`wise.jobs`);
    underlying ATS may be SmartRecruiters but public API not directly accessible.
-9. **Endowus** — `careers-page.com` custom platform (`endowus.careers-page.com`);
+6. **Endowus** — `careers-page.com` custom platform (`endowus.careers-page.com`);
    no standard ATS markers found.
-10. **MAS** — no direct job listings found on `mas.gov.sg/careers`; likely
-    Careers@Gov (government HR system) with no public API.
-11. **Sea Group, Shopee, GoTo, Traveloka, Atlassian, Canva, Revolut, Aspire,
-    StashAway** — all SPA/JS shells with no ATS markers extractable from curl.
-12. **Carousell** — SmartRecruiters-backed but private company id (public SR
-    API 404s on the `Carousell` slug).
+7. **MAS** — no direct job listings found on `mas.gov.sg/careers`; likely
+   Careers@Gov (government HR system) with no public API.
+8. **Sea Group, Shopee, GoTo, Traveloka, Atlassian, Canva, Revolut, Aspire,
+   StashAway** — all SPA/JS shells with no ATS markers extractable from curl.
+9. **Carousell** — SmartRecruiters-backed but private company id (public SR
+   API 404s on the `Carousell` slug).
+
+**Resolved 2026-08-07**: OCBC (Workday `ocbc.wd102`, not Taleo — bank
+migrated off `ocbc.taleo.net`, which is now globally NXDOMAIN, not just
+network-blocked), FactSet (Workday `factset.wd108`, `careers.factset.com`
+DNS never existed — the actual tenant domain is `*.myworkdayjobs.com`), LSEG
+(Workday `lseg.wd3`, site `Careers` not `Graduate_Careers` — `careers.lseg.com`
+also never existed, real page is `lseg.com/en/careers`). All three DNS
+"blocks" from 2026-08-06 were misdiagnosed: the branded `careers.*` subdomains
+simply don't exist (confirmed via public DoH resolver, not just this
+network) — the companies use unbranded Workday tenant URLs directly.
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from

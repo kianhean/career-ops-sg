@@ -1,6 +1,6 @@
 # TODO — Websearch fallback → Direct
 
-The 23 SG/APAC companies that still scan via websearch fallback
+The 20 SG/APAC companies that still scan via websearch fallback
 (`scan_query`) instead of a zero-token ATS provider. Each row records what
 was tried and why the board isn't direct yet — the "Known ATS / why not
 direct" column IS the next step. When a company gets resolved, move it to
@@ -12,6 +12,15 @@ it here.
 NETS (SuccessFactors RMK, `careers.nets.com.sg`, J2W search),
 Ninja Van (Lever, `jobs.lever.co/ninjavan`, 174 postings / 15 SG) —
 moved to Direct table in `sg-ats-coverage.md`.
+
+**Resolved (2026-08-07)**: OCBC (Workday, `ocbc.wd102.myworkdayjobs.com/External`,
+989 postings — **not Taleo**; the `ocbc.taleo.net` board this repo logged on
+2026-08-06 is globally NXDOMAIN, the bank has since migrated to Workday),
+FactSet (Workday, `factset.wd108.myworkdayjobs.com/FactSetCareers`,
+63 postings — `careers.factset.com` never existed, that was a bad guess, not
+a network block), LSEG (Workday, `lseg.wd3.myworkdayjobs.com/Careers`,
+792 postings, 18 SG-matching — `careers.lseg.com` never existed either; real
+site is `lseg.com/en/careers`) — moved to Direct table in `sg-ats-coverage.md`.
 
 Priority order for tackling these: the **Expansion roadmap** section in
 `sg-ats-coverage.md`.
@@ -34,13 +43,13 @@ Priority order for tackling these: the **Expansion roadmap** section in
 | Hudson River Trading | Greenhouse board exists but is **talent-community only** (campus listings); real board is custom ATS |
 | DRW | no markers; gh `drw`/`drwgroup` absent |
 | Citadel Securities | JS shell; gh `citadel` (0 postings)/`citadelsec`/`citadelsecurities` absent |
-| FactSet | `careers.factset.com` **DNS-unresolvable** from this network — ATS unknown |
+| FactSet | → **Resolved** — moved to Direct. |
 | Bloomberg | small page, no markers — custom recruiting system |
-| LSEG | `careers.lseg.com` **DNS-unresolvable** from this network — ATS unknown |
-| OCBC | **Taleo** (`ocbc.taleo.net/careersection/ocbc_external/jobsearch.ftl` from careers page) but DNS-unresolvable from this network; `taleo.net` domain completely blocked. Taleo not in career-ops provider list. |
+| LSEG | → **Resolved** — moved to Direct. |
+| OCBC | → **Resolved** — moved to Direct. |
 | UOB | → **Resolved** — moved to Direct. |
 | GIC | → **Resolved** — moved to Direct. |
-| Temasek | **403 WAF-blocked** entirely from this network — homepage inaccessible; ATS unknown |
+| Temasek | `www.temasek.com.sg` is 403 WAF-blocked, but real careers portal found: **SAP SuccessFactors** RCM/CSB 2.0 at `career2.successfactors.eu/career?company=temasekcapP2` (200 OK). Not a bare REST board — job search is wired through classic SF `AjaxService`/JSF ViewState postback (`getInitialJobSearchData`), unlike the CSB/RMK/J2W variants already supported. Needs captured XHR payload or a headless-browser scan. |
 | MAS | no markers; `mas.gov.sg/careers` is Sitecore CMS; no direct job listings found — positions likely on Careers@Gov (government HR system) with no public API |
 | Fullerton Fund Management | no markers; jobs linked to **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`) — not zero-token scannable |
 | NBIM | **Webcruiter** (`398280.webcruiter.no`, Nordic ATS) — no existing provider; would need new provider module |
