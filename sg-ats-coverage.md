@@ -17,7 +17,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (46 companies, 12 vendors)
+## Direct ATS (48 companies, 14 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -57,6 +57,8 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | CIMB | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (new — see gap) | careers.cimb.com (API: `ejox.fa.ap1.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=CX_1`) | live (509 postings on site CX_1) — 11 sites (CX_1..CX_11) cover different CIMB business lines/countries; SG-specific site not yet isolated |
 | JPMorgan Chase | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (new — see gap) | jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs (API: same host, `siteNumber=CX_1001`) | live (7,482 postings globally) — SG-specific filter not yet isolated |
 | ANZ | SuccessFactors (J2W, RMK instance `career10.successfactors.com`) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.anz.com/search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=0 | live (100+ postings, `q=Singapore` narrows to 5) — same `career10.successfactors.com` RMK instance as GIC/NETS (`company=anzbanking`); branded CSB API returns 405, J2W search page works; RSS feed also live at `careers.anz.com/services/rss/category/?catid=4739210` (10 items, unclear if capped) |
+| Shopee | WorkAtSea (Sea Group custom ATS) | `workatsea.mjs` (new — see gap) | careers.shopee.sg/jobs (API: `ats.workatsea.com/ats/api/v1/user/job/list/?limit=<n>&offset=<n>`) | live (2,638 postings across all Sea Group entities/markets) — the page itself is a JS shell with no markers; the API host was only found by capturing the browser's XHR traffic (`playwright` network log), not from curl-ing the page; no cookies/auth needed; `city_id` query param present in payloads (25 was the most common value in a 100-row sample) but passing `city_id=25` as a filter didn't change `total_count`, so the SG-only slice isn't isolated yet — needs the correct filter param name |
+| Wise | SmartRecruiters Attrax (server-rendered) | `successfactors.mjs`-style HTML-parser variant, or new `attrax.mjs` (see gap) | wise.jobs/jobs?options=320&page=1 | live (30 postings matching Singapore, 12/page) — `options=320` is the Singapore location filter; confirmed server-rendered (plain curl, no cookies/JS returns full job list, all slugs end `-in-singapore-jid-<n>`); resolves the 2026-08-06 roadmap note "public SR API not directly accessible" — the underlying SmartRecruiters API isn't needed, the Attrax front end itself is zero-token parseable |
 | MSCI | iCIMS | `icims.mjs` | globalcareers-msci.icims.com | live (93 postings) |
 | Standard Chartered | SuccessFactors (CSB) | `successfactors.mjs` | jobs.standardchartered.com/ (`provider: successfactors`) | live (697 postings; first posting already a SG role) |
 | CPF Board | SuccessFactors (CSB) | `successfactors.mjs` | careers.cpf.gov.sg/search/?q=& (`provider: successfactors`) | live (23 postings; CSB API reachable directly at careers.cpf.gov.sg — see gotchas) |
@@ -85,7 +87,7 @@ under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 
-The 20 websearch-fallback companies and the `search_queries` boards now live
+The 18 websearch-fallback companies and the `search_queries` boards now live
 in **`TODO.md`** — the "Known ATS / why not direct" notes there are the next
 steps. Resolved companies move back here as Direct rows.
 
@@ -110,7 +112,9 @@ new vendors.
 | SEEK (Jobstreet) | `jobstreet.mjs` | 1 (job board) | ✓ direct, `siteKey: SG-Main` |
 | Eightfold | `eightfold.mjs` (**new vendor**) | 1 (HSBC) | gap: no provider module yet — API confirmed at `<tenant>.eightfold.ai/api/apply/v2/jobs?domain=<domain>&location=<Country>`, JSON `positions[]`/`count`, no auth needed |
 | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (**new vendor**) | 2 (CIMB, JPMorgan Chase) | gap: no provider module yet — API confirmed at `<tenant>.fa.<region?>.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=<CX_N>`, JSON `requisitionList[]`/`TotalJobsCount`, no auth needed |
-| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Shopee, Maybank, Deutsche Bank, … | gap: see roadmap |
+| WorkAtSea (Sea Group custom) | `workatsea.mjs` (**new vendor**) | 1 (Shopee) | gap: no provider module yet — API confirmed at `ats.workatsea.com/ats/api/v1/user/job/list/?limit=<n>&offset=<n>`, JSON `data.job_list[]`/`data.total_count`, no auth needed; found via captured browser XHR, not visible from curl-ing the page |
+| SmartRecruiters Attrax | HTML-parser variant (**new pattern**) | 1 (Wise) | gap: no provider module yet — the Attrax-rendered search page (`wise.jobs/jobs?options=<location_id>&page=<n>`) is server-rendered HTML, zero-token via plain curl; same shape as the SuccessFactors J2W variant already needed for SGX/GIC/NETS/ANZ |
+| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Maybank, Deutsche Bank, … | gap: see roadmap |
 
 ## How boards were verified (repeat for new candidates)
 
@@ -272,6 +276,19 @@ no auth), so a provider module is a reasonable next step before probing more
 banks, since Oracle Recruiting Cloud alone would already cover 2 companies
 (CIMB, JPMorgan) with more large banks (e.g. Citi uses a different vendor,
 but other global banks commonly run Oracle Recruiting Cloud or Eightfold too).
+
+**Resolved 2026-08-07 (batch 4 — user-supplied URLs)**: Shopee (**new
+vendor: WorkAtSea**, Sea Group's own custom ATS — `careers.shopee.sg` is a JS
+shell that only revealed its real API host, `ats.workatsea.com`, via a
+captured browser network trace, not curl+grep; 2,638 postings across all Sea
+Group markets, SG-only slice not yet isolated) and Wise (**resolves the
+2026-08-06 "public SR API not directly accessible" note** — the SmartRecruiters
+Attrax front end at `wise.jobs/jobs?options=320&page=1` is itself
+server-rendered HTML, no API needed; `options=320` = Singapore filter, 30
+postings). Lesson from Shopee: when curl+grep finds a JS shell with truly
+zero markers, a headless-browser network capture (Playwright) is now a
+standard fallback step, not just a documented "would need" — it took one
+`browser_navigate` + `browser_network_requests` call to find the API.
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from

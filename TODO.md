@@ -1,6 +1,6 @@
 # TODO — Websearch fallback → Direct
 
-The 20 SG/APAC companies that still scan via websearch fallback
+The 18 SG/APAC companies that still scan via websearch fallback
 (`scan_query`) instead of a zero-token ATS provider. Each row records what
 was tried and why the board isn't direct yet — the "Known ATS / why not
 direct" column IS the next step. When a company gets resolved, move it to
@@ -41,13 +41,22 @@ RMK instance as GIC/NETS, `company=anzbanking`, `q=Singapore` narrows to 5) —
 moved to Direct table in `sg-ats-coverage.md`. Maybank and Deutsche Bank were
 probed in the same batch and stayed open (added to the table below).
 
+**Resolved (2026-08-07, batch 4 — user-supplied URLs)**: Shopee (**new vendor
+WorkAtSea**, Sea Group's own custom ATS — `ats.workatsea.com/ats/api/v1/user/job/list/`,
+2,638 postings across all Sea Group markets; the real API host only surfaced
+via a captured browser network trace, not curl+grep) and Wise (resolves the
+"public SR API not directly accessible" note — the SmartRecruiters Attrax
+front end itself is server-rendered HTML, `wise.jobs/jobs?options=320&page=1`,
+30 SG postings, no API call needed) — moved to Direct table in
+`sg-ats-coverage.md`.
+
 Priority order for tackling these: the **Expansion roadmap** section in
 `sg-ats-coverage.md`.
 
 | Company | Known ATS / why not direct |
 |---|---|
-| Sea Group | careers SPA; no vendor markers; SR slugs verified absent |
-| Shopee | JS shell (3.5 KB); no markers; gh/ashby/lever/SR slugs absent |
+| Sea Group | careers SPA; no vendor markers; SR slugs verified absent — note: Shopee (Sea subsidiary) turned out to run WorkAtSea, `ats.workatsea.com`; worth re-checking if Sea Group's own board shares that host |
+| Shopee | → **Resolved** — moved to Direct. |
 | GoTo Group | → **Resolved** — moved to Direct. |
 | Traveloka | `traveloka.wd3.myworkdayjobs.com/Traveloka` is indexed by search engines but returns `HTTP_422` live on every site/tenant guess (2026-08-07) — likely a decommissioned Workday board; current `careers.traveloka.com/jobs` is client-rendered, no ATS markers in initial HTML |
 | Carousell | → **Resolved** — moved to Direct. |
@@ -57,7 +66,7 @@ Priority order for tackling these: the **Expansion roadmap** section in
 | Aspire | SPA; no markers |
 | StashAway | SPA; no markers |
 | Endowus | `careers-page.com` custom platform (`endowus.careers-page.com`, linked from Webflow careers page); no standard ATS markers visible |
-| Wise | **SmartRecruiters Attrax** custom career site (`wise.jobs`) — footer confirms "Career site system powered by SmartRecruiters Attrax"; jobs loaded via Attrax search widget; public SR API not directly accessible |
+| Wise | → **Resolved** — moved to Direct. |
 | Revolut | 873 KB SPA; no markers; careers page 403 from this network |
 | Hudson River Trading | Greenhouse board exists but is **talent-community only** (campus listings); real board is custom ATS |
 | DRW | no markers; gh `drw`/`drwgroup` absent |
@@ -120,12 +129,15 @@ and Deutsche Bank were probed and are still open — see below.
 **Insurance**: AIA, Prudential, Great Eastern, Manulife, NTUC Income,
 Allianz, Sompo.
 
-**SPA-shell tech** (same bucket as Sea Group/Shopee/Traveloka/Atlassian/Canva/
+**SPA-shell tech** (same bucket as Sea Group/Traveloka/Atlassian/Canva/
 Revolut — expect no markers on the marketing domain itself, but check
-websearch for a separate ATS board first: GoTo Group and Carousell were both
-in this bucket until 2026-08-07, when websearch turned up their real Lever/
-SmartRecruiters boards on unrelated domains): ByteDance/TikTok, Lazada, Agoda,
-Klook, Booking.com, Gojek (if still distinct from GoTo), Zalo/VNG.
+websearch for a separate ATS board first, or capture the browser's network
+traffic (Playwright) for the real API host: GoTo Group and Carousell were
+both in this bucket until 2026-08-07, when websearch turned up their real
+Lever/SmartRecruiters boards on unrelated domains, and Shopee's real API
+host (`ats.workatsea.com`) only surfaced via a captured XHR trace):
+ByteDance/TikTok, Lazada, Agoda, Klook, Booking.com, Gojek (if still distinct
+from GoTo), Zalo/VNG.
 
 **Statutory boards / govt** (same bucket as CPF Board/SGX/MAS — likely
 Careers@Gov with no public API, low priority): HDB, IMDA, GovTech, EDB, JTC,
