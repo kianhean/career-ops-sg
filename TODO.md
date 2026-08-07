@@ -60,6 +60,55 @@ Tech in Asia, Glints, RemoteOK, Remotive ×2, WeWorkRemotely ×2, Himalayas,
 Working Nomads, Greenhouse/Ashby/Lever APAC cross-portal discovery ×6,
 HN Who's Hiring).
 
+## New candidates (not yet probed)
+
+Not in `portals.yml` yet — grouped by the same clusters as companies already
+resolved above, on the theory that sector-adjacent employers often share ATS
+vendor/pattern. None of these have been fetched or slug-probed; treat every
+name here as an unknown until it goes through the verify steps in
+`sg-ats-coverage.md` ("How boards were verified"). Move a name to the table
+above once it's been tried and failed, or straight to the Direct table if
+verified live.
+
+**Prop trading / market makers** (adjacent to Jane Street, Jump, IMC, Optiver,
+Squarepoint, Tower, DRW, Citadel Securities, HRT — this cluster is mostly
+Greenhouse): Susquehanna (SIG), Akuna Capital, XTX Markets, Old Mission,
+Radix Trading, Graviton Research Capital, Qube Research & Technologies (QRT),
+GSA Capital, Man Group (Man AHL), Virtu Financial, Two Sigma, Millennium,
+Point72, Balyasny.
+
+**Fintech / payments** (adjacent to Adyen, Stripe, Airwallex, Thunes, Nium,
+Coda Payments, Wise, Aspire): Rapyd, Checkout.com, dLocal, Xendit, Circle,
+Ripple, Klarna, PayPal, Worldpay, Currencycloud.
+
+**Asset managers / SWF-adjacent** (adjacent to GIC, Temasek, BlackRock, MSCI,
+S&P Global, LSEG, Nasdaq, FactSet, NBIM): Temasek portfolio entities with
+likely separate career sites (Mapletree, CapitaLand Investment, Vertex
+Ventures, Azalea Asset Management, Pavilion Capital); other SWFs/pensions with
+SG offices (APG, PSP Investments, CPP Investments, ADIA); asset managers
+(State Street, PIMCO, Fidelity International, Schroders, abrdn, Allianz
+Global Investors, KKR, Blackstone, Carlyle, Apollo).
+
+**Banks** (adjacent to DBS, UOB, OCBC, Standard Chartered): Maybank, CIMB,
+HSBC, Citi, JPMorgan, Deutsche Bank, ANZ, RHB, Hong Leong Bank.
+
+**Insurance**: AIA, Prudential, Great Eastern, Manulife, NTUC Income,
+Allianz, Sompo.
+
+**SPA-shell tech** (same bucket as Sea Group/Shopee/GoTo/Traveloka/
+Atlassian/Canva/Revolut — expect no markers, low hit rate): ByteDance/TikTok,
+Lazada, Agoda, Klook, Booking.com, Gojek (if still distinct from GoTo), Zalo/VNG.
+
+**Statutory boards / govt** (same bucket as CPF Board/SGX/MAS — likely
+Careers@Gov with no public API, low priority): HDB, IMDA, GovTech, EDB, JTC,
+LTA, PUB, MOM.
+
+**Wealth / investing platforms** (adjacent to Endowus, StashAway, Aspire):
+Syfe, Kristal.AI, Bambu, Tiger Brokers, Saxo Markets, iFAST/FSMOne.
+
+**Crypto** (SG-hub exchanges, new cluster): Coinbase, Amber Group,
+Matrixport, OKX, Bybit.
+
 **MyCareersFuture ×3**: API verified direct zero-token (2026-08-06) —
 `POST api.mycareersfuture.gov.sg/v2/search` (see sg-ats-coverage.md "Also
 direct"). Only needs a `mycareersfuture.mjs` provider in career-ops; then
