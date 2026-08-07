@@ -2,20 +2,20 @@
 
 Singapore-focused inventory of ATS vendors behind every tracked Singapore/APAC
 employer, mapped to the provider modules in the **career-ops** skill
-(`providers/*.mjs`). The goal of this repo is to expand career-ops' zero-token
-ATS scanning for the Singapore market: every row under **Direct** is a company
-the skill can already scan end-to-end; the **Gap** sections are the expansion
-targets.
+(`providers/*.mjs`). This doc tracks what's **verified and working**: every
+row under **Direct** is a company the skill can already scan end-to-end.
+Still-open companies and untried candidates live in `TODO.md`, not here.
 
 Data provenance: verified 2026-08-06 against `career-search` repo
 (`portals.yml → tracked_companies`, every entry end-to-end tested with
-`node scan.mjs --company "<name>"`).
+`node scan.mjs --company "<name>"`); rows added since then are dated inline
+— see `CHANGELOG.md` for the batch-by-batch history.
 
 Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websearch).
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (35 companies, 10 vendors)
+## Direct ATS (48 companies, 14 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -38,6 +38,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Confluent | Ashby | `ashby.mjs` | jobs.ashbyhq.com/confluent | live |
 | Coda Payments | Lever | `lever.mjs` | jobs.lever.co/Coda | live (24 postings) — **slug is capital-C `Coda`** |
 | Nium | Lever | `lever.mjs` | jobs.lever.co/nium | live |
+| GoTo Group | Lever | `lever.mjs` | jobs.lever.co/GoToGroup | live (48 postings, 19 Singapore) — previously logged "SPA, no markers"; found via websearch, not visible from curl-ing `gotocompany.com` directly |
 | DBS Bank | Workday | `workday.mjs` | dbs.wd3.myworkdayjobs.com/DBS_Careers | live (1,382 postings) |
 | UOB | Workday | `workday.mjs` | uobgroup.wd3.myworkdayjobs.com/UOBExternal | live (976 postings) |
 | Grab | SmartRecruiters (Umbraco branded front) | `smartrecruiters.mjs` | www.grab.careers/en/jobs/ (SR API: `/v1/companies/Grab/postings`; RSS: `/en/jobs/xml/?rss=true`) | live (346 postings, 77 SG) — migrated from Workday; old board dead |
@@ -45,6 +46,17 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | PropertyGuru | Workday | `workday.mjs` | propertyguru.wd105.myworkdayjobs.com/en-US/PropertyGuru/ | live (24 postings) |
 | S&P Global | Workday | `workday.mjs` | spgi.wd5.myworkdayjobs.com/SPGI_Careers | live (296 postings) |
 | Visa | Workday | `workday.mjs` | visa.wd5.myworkdayjobs.com/Visa | live (772 postings) — the **wd5** tenant; `visa.wd1` 500s on every site name |
+| OCBC | Workday | `workday.mjs` | ocbc.wd102.myworkdayjobs.com/External | live (989 postings, incl. OCBC Singapore, OCBC Malaysia, Bank of Singapore reqs) — **not Taleo**; bank migrated off `ocbc.taleo.net` (now globally NXDOMAIN) |
+| FactSet | Workday | `workday.mjs` | factset.wd108.myworkdayjobs.com/FactSetCareers | live (63 postings) — the **wd108** tenant; `factset.wd1` returns HTTP_422 on every payload |
+| LSEG | Workday | `workday.mjs` | lseg.wd3.myworkdayjobs.com/Careers | live (792 postings, 18 matching "Singapore") — site is `Careers`, not `Graduate_Careers` (5 postings, campus-only) |
+| RHB Bank | Workday | `workday.mjs` | rhb.wd102.myworkdayjobs.com/RHBExternalCareerSite | live (368 postings, 9 matching "Singapore") |
+| Citi | Radancy (TalentBrew) | `radancy.mjs` | jobs.citi.com/search-jobs (`provider: radancy`) | live (3,425 postings, tenant id 287) — server-rendered search page; Eightfold links on the page are for early-career events only, not the main board; the `myworkdayjobs` link on the page is post-application account management, not job search |
+| HSBC | Eightfold | `eightfold.mjs` (new — see gap) | portal.careers.hsbc.com/careers?domain=hsbc.com (API: `hsbc.eightfold.ai/api/apply/v2/jobs?domain=hsbc.com&location=<Country>`) | live (68 postings matching Singapore) — `mycareer.hsbc.com` (Avature) is a separate legacy portal; the real board linked from `hsbc.com/careers/find-a-job` is Eightfold |
+| CIMB | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (new — see gap) | careers.cimb.com (API: `ejox.fa.ap1.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=CX_1`) | live (509 postings on site CX_1) — 11 sites (CX_1..CX_11) cover different CIMB business lines/countries; SG-specific site not yet isolated |
+| JPMorgan Chase | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (new — see gap) | jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs (API: same host, `siteNumber=CX_1001`) | live (7,482 postings globally) — SG-specific filter not yet isolated |
+| ANZ | SuccessFactors (J2W, RMK instance `career10.successfactors.com`) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.anz.com/search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=0 | live (100+ postings, `q=Singapore` narrows to 5) — same `career10.successfactors.com` RMK instance as GIC/NETS (`company=anzbanking`); branded CSB API returns 405, J2W search page works; RSS feed also live at `careers.anz.com/services/rss/category/?catid=4739210` (10 items, unclear if capped) |
+| Shopee | WorkAtSea (Sea Group custom ATS) | `workatsea.mjs` (new — see gap) | careers.shopee.sg/jobs (API: `ats.workatsea.com/ats/api/v1/user/job/list/?limit=<n>&offset=<n>`) | live (2,638 postings across all Sea Group entities/markets) — the page itself is a JS shell with no markers; the API host was only found by capturing the browser's XHR traffic (`playwright` network log), not from curl-ing the page; no cookies/auth needed; `city_id` query param present in payloads (25 was the most common value in a 100-row sample) but passing `city_id=25` as a filter didn't change `total_count`, so the SG-only slice isn't isolated yet — needs the correct filter param name |
+| Wise | SmartRecruiters Attrax (server-rendered) | `successfactors.mjs`-style HTML-parser variant, or new `attrax.mjs` (see gap) | wise.jobs/jobs?options=320&page=1 | live (30 postings matching Singapore, 12/page) — `options=320` is the Singapore location filter; confirmed server-rendered (plain curl, no cookies/JS returns full job list, all slugs end `-in-singapore-jid-<n>`); resolves the 2026-08-06 roadmap note "public SR API not directly accessible" — the underlying SmartRecruiters API isn't needed, the Attrax front end itself is zero-token parseable |
 | MSCI | iCIMS | `icims.mjs` | globalcareers-msci.icims.com | live (93 postings) |
 | Standard Chartered | SuccessFactors (CSB) | `successfactors.mjs` | jobs.standardchartered.com/ (`provider: successfactors`) | live (697 postings; first posting already a SG role) |
 | CPF Board | SuccessFactors (CSB) | `successfactors.mjs` | careers.cpf.gov.sg/search/?q=& (`provider: successfactors`) | live (23 postings; CSB API reachable directly at careers.cpf.gov.sg — see gotchas) |
@@ -54,6 +66,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Ninja Van | Lever | `lever.mjs` | jobs.lever.co/ninjavan | live (174 postings, 15 SG) — single Lever board serves both Ninja Van (logistics) and Ninja Mart (FMCG) under same parent company |
 | BlackRock | Radancy (TalentBrew) | `radancy.mjs` | careers.blackrock.com/en/search-jobs (`provider: radancy`) | live (280 postings) |
 | Mastercard | Phenom (fronting Workday) | `phenom.mjs` | careers.mastercard.com (`provider: phenom`) | live (1,129 postings; SG roles prominent) |
+| Carousell | SmartRecruiters | `smartrecruiters.mjs` | jobs.smartrecruiters.com/CarousellGroup | live (50 postings, 9 SG) — the public company id is **`CarousellGroup`**, not `Carousell`; the 2026-08-06 note ("private company id, public SR API 404s") was a wrong slug guess, not an actual access restriction |
 
 Also direct: **Jobstreet Singapore** (job board, SEEK v5 API, `provider: jobstreet`
 with `siteKey: SG-Main`) under `job_boards`. The other `job_boards` entries
@@ -72,7 +85,7 @@ under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 
-The 24 websearch-fallback companies and the `search_queries` boards now live
+The 18 websearch-fallback companies and the `search_queries` boards now live
 in **`TODO.md`** — the "Known ATS / why not direct" notes there are the next
 steps. Resolved companies move back here as Direct rows.
 
@@ -86,16 +99,20 @@ new vendors.
 | Vendor | Provider module | SG companies served | Status |
 |---|---|---|---|
 | Greenhouse | `greenhouse.mjs` | 15 | ✓ direct |
-| Workday | `workday.mjs` | 6 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa) | ✓ direct |
-| Lever | `lever.mjs` | 3 (Coda Payments, Ninja Van, Nium) | ✓ direct |
+| Workday | `workday.mjs` | 10 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa, OCBC, FactSet, LSEG, RHB Bank) | ✓ direct |
+| Lever | `lever.mjs` | 4 (Coda Payments, Ninja Van, Nium, GoTo Group) | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
-| SuccessFactors | `successfactors.mjs` | 5 (Standard Chartered, CPF Board — CSB; GIC, NETS — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS |
+| SuccessFactors | `successfactors.mjs` | 6 (Standard Chartered, CPF Board — CSB; GIC, NETS, ANZ — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS, ANZ |
 | Phenom | `phenom.mjs` | 1 | ✓ direct |
-| Radancy | `radancy.mjs` | 1 | ✓ direct |
+| Radancy | `radancy.mjs` | 2 (BlackRock, Citi) | ✓ direct |
 | iCIMS | `icims.mjs` | 1 | ✓ direct |
-| SmartRecruiters | `smartrecruiters.mjs` | 1 (Grab — public company id) | ✓ direct; Carousell still needs `local_parser` via its WP proxy |
+| SmartRecruiters | `smartrecruiters.mjs` | 2 (Grab, Carousell — both public company ids on the standard API) | ✓ direct |
 | SEEK (Jobstreet) | `jobstreet.mjs` | 1 (job board) | ✓ direct, `siteKey: SG-Main` |
-| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Shopee, … | gap: see roadmap |
+| Eightfold | `eightfold.mjs` (**new vendor**) | 1 (HSBC) | gap: no provider module yet — API confirmed at `<tenant>.eightfold.ai/api/apply/v2/jobs?domain=<domain>&location=<Country>`, JSON `positions[]`/`count`, no auth needed |
+| Oracle Recruiting Cloud | `oracle-recruiting.mjs` (**new vendor**) | 2 (CIMB, JPMorgan Chase) | gap: no provider module yet — API confirmed at `<tenant>.fa.<region?>.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=<CX_N>`, JSON `requisitionList[]`/`TotalJobsCount`, no auth needed |
+| WorkAtSea (Sea Group custom) | `workatsea.mjs` (**new vendor**) | 1 (Shopee) | gap: no provider module yet — API confirmed at `ats.workatsea.com/ats/api/v1/user/job/list/?limit=<n>&offset=<n>`, JSON `data.job_list[]`/`data.total_count`, no auth needed; found via captured browser XHR, not visible from curl-ing the page |
+| SmartRecruiters Attrax | HTML-parser variant (**new pattern**) | 1 (Wise) | gap: no provider module yet — the Attrax-rendered search page (`wise.jobs/jobs?options=<location_id>&page=<n>`) is server-rendered HTML, zero-token via plain curl; same shape as the SuccessFactors J2W variant already needed for SGX/GIC/NETS/ANZ |
+| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Maybank, Deutsche Bank, … | gap: see `TODO.md` |
 
 ## How boards were verified (repeat for new candidates)
 
@@ -125,6 +142,20 @@ not `visa.wd1` (which 500s). And a brand's obvious domain may not exist:
 `careers.visa.com` is NXDOMAIN — the branded front is `corporate.visa.com/en/jobs/`,
 which embeds the Workday link. Probe the branded jobs page for the embed; don't
 guess the tenant from the brand.
+
+A `careers.<company>.com` DNS failure is not proof the ATS is blocked or
+unknown — verify with a public DoH resolver (`https://dns.google/resolve?name=...`)
+before writing a company off as network-blocked. FactSet and LSEG were both
+logged 2026-08-06 as "DNS-unresolvable from this network"; re-checked
+2026-08-07, `careers.factset.com` and `careers.lseg.com` are NXDOMAIN
+*globally* — those subdomains never existed. Both companies' real career
+sites are plain `*.myworkdayjobs.com` tenants (`factset.wd108`, `lseg.wd3`,
+site `Careers`) linked from ordinary marketing pages (`factset.com/careers`,
+`lseg.com/en/careers`). Same pattern caught OCBC: the Taleo board logged
+2026-08-06 (`ocbc.taleo.net`) is NXDOMAIN globally too — not blocked, gone.
+The bank migrated to Workday (`ocbc.wd102`) and the doc's ATS guess was stale,
+not network-limited. Lesson: always search for the current careers page
+before trusting an old vendor guess or a DNS failure as "still blocked".
 
 ## SuccessFactors gotchas seen live
 
@@ -166,35 +197,9 @@ The J2W server-rendered search works: `GET /search/?q=&sortColumn=referencedate&
 returns jobs as HTML tiles. Same `startrow` pagination pattern as SGX; the
 `successfactors.mjs` J2W HTML-parser variant can serve all three.
 
-## Expansion roadmap (next candidates to resolve)
-
-Priority order — these are the SG companies that move from Websearch → Direct,
-expanding career-ops' SG coverage:
-
-1. **OCBC** — confirmed **Oracle Taleo** at `ocbc.taleo.net/careersection/ocbc_external/jobsearch.ftl`
-   (from careers page), but `ocbc.taleo.net` DNS-unresolvable from this network.
-   Taleo not in career-ops provider list; would need a new provider module.
-2. **GIC, Temasek** — GIC resolved (SuccessFactors RMK, above). Temasek:
-   `www.temasek.com.sg` is **403 WAF-blocked** entirely from this network; ATS unknown.
-3. **OCBC, UOB** — UOB resolved (Workday, above). OCBC: Taleo, DNS blocked (see #1).
-4. **FactSet, LSEG** — careers subdomains DNS-blocked here. Resolve DNS elsewhere,
-   identify ATS, then re-probe.
-5. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
-6. **NBIM** — confirmed **Webcruiter** (`398280.webcruiter.no`, Nordic ATS); no
-   existing provider module; would need a new provider.
-7. **Fullerton Fund Management** — jobs are **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`);
-   not zero-token scannable.
-8. **Wise** — **SmartRecruiters Attrax** custom career site (`wise.jobs`);
-   underlying ATS may be SmartRecruiters but public API not directly accessible.
-9. **Endowus** — `careers-page.com` custom platform (`endowus.careers-page.com`);
-   no standard ATS markers found.
-10. **MAS** — no direct job listings found on `mas.gov.sg/careers`; likely
-    Careers@Gov (government HR system) with no public API.
-11. **Sea Group, Shopee, GoTo, Traveloka, Atlassian, Canva, Revolut, Aspire,
-    StashAway** — all SPA/JS shells with no ATS markers extractable from curl.
-12. **Carousell** — SmartRecruiters-backed but private company id (public SR
-    API 404s on the `Carousell` slug).
-
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from
 ephemeral containers; nothing persists uncommitted).
+
+Batch-by-batch history of how this Direct table grew now lives in
+`CHANGELOG.md`.
