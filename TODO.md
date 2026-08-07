@@ -1,6 +1,6 @@
 # TODO — Websearch fallback → Direct
 
-The 18 SG/APAC companies that still scan via websearch fallback
+The 20 SG/APAC companies that still scan via websearch fallback
 (`scan_query`) instead of a zero-token ATS provider. Each row records what
 was tried and why the board isn't direct yet — the "Known ATS / why not
 direct" column IS the next step. When a company gets resolved, move it to
@@ -27,6 +27,19 @@ site is `lseg.com/en/careers`), GoTo Group (Lever, `jobs.lever.co/GoToGroup`,
 "private company id" note was wrong: the real public slug is
 `CarousellGroup`, not `Carousell`) — moved to Direct table in
 `sg-ats-coverage.md`.
+
+**Resolved (2026-08-07, batch 3 — bank cluster)**: RHB Bank (Workday,
+`rhb.wd102.myworkdayjobs.com/RHBExternalCareerSite`, 368 postings / 9 SG),
+Citi (Radancy, `jobs.citi.com/search-jobs`, 3,425 postings — same provider as
+BlackRock), HSBC (**new vendor Eightfold**, `hsbc.eightfold.ai/api/apply/v2/jobs`,
+68 SG postings — `mycareer.hsbc.com` is a separate Avature-powered legacy
+portal, not the live board), CIMB (**new vendor Oracle Recruiting Cloud**,
+`ejox.fa.ap1.oraclecloud.com`, 509 postings on site CX_1 of 11), JPMorgan
+Chase (Oracle Recruiting Cloud, `jpmc.fa.oraclecloud.com`, 7,482 postings on
+site CX_1001), ANZ (SuccessFactors J2W, same `career10.successfactors.com`
+RMK instance as GIC/NETS, `company=anzbanking`, `q=Singapore` narrows to 5) —
+moved to Direct table in `sg-ats-coverage.md`. Maybank and Deutsche Bank were
+probed in the same batch and stayed open (added to the table below).
 
 Priority order for tackling these: the **Expansion roadmap** section in
 `sg-ats-coverage.md`.
@@ -60,6 +73,8 @@ Priority order for tackling these: the **Expansion roadmap** section in
 | Fullerton Fund Management | no markers; jobs linked to **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`) — not zero-token scannable |
 | NBIM | **Webcruiter** (`398280.webcruiter.no`, Nordic ATS) — no existing provider; would need new provider module |
 | NETS | → **Resolved** — moved to Direct. |
+| Maybank | `maybankjobs.com` is a 14.5 KB JS shell; no ATS markers in initial HTML; needs a headless-browser scan to find the real API |
+| Deutsche Bank | `careers.db.com/professionals/search-roles/` is fully client-rendered (92 KB, zero markers, no discoverable API path in raw HTML); needs a headless-browser scan |
 
 Also websearch: the boards in `search_queries` (LinkedIn ×3, Nodeflair ×2,
 Tech in Asia, Glints, RemoteOK, Remotive ×2, WeWorkRemotely ×2, Himalayas,
@@ -95,8 +110,12 @@ SG offices (APG, PSP Investments, CPP Investments, ADIA); asset managers
 (State Street, PIMCO, Fidelity International, Schroders, abrdn, Allianz
 Global Investors, KKR, Blackstone, Carlyle, Apollo).
 
-**Banks** (adjacent to DBS, UOB, OCBC, Standard Chartered): Maybank, CIMB,
-HSBC, Citi, JPMorgan, Deutsche Bank, ANZ, RHB, Hong Leong Bank.
+**Banks** (adjacent to DBS, UOB, OCBC, Standard Chartered): Hong Leong Bank.
+CIMB, HSBC, Citi, JPMorgan, ANZ, RHB → **resolved 2026-08-07**, moved to
+Direct table in `sg-ats-coverage.md` (CIMB and JPMorgan surfaced a new
+vendor, Oracle Recruiting Cloud; HSBC surfaced another, Eightfold — both need
+provider modules, see "Vendor → provider coverage matrix" gap rows). Maybank
+and Deutsche Bank were probed and are still open — see below.
 
 **Insurance**: AIA, Prudential, Great Eastern, Manulife, NTUC Income,
 Allianz, Sompo.

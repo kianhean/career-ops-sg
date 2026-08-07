@@ -17,7 +17,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (40 companies, 10 vendors)
+## Direct ATS (46 companies, 12 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -51,6 +51,12 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | OCBC | Workday | `workday.mjs` | ocbc.wd102.myworkdayjobs.com/External | live (989 postings, incl. OCBC Singapore, OCBC Malaysia, Bank of Singapore reqs) — **not Taleo**; bank migrated off `ocbc.taleo.net` (now globally NXDOMAIN) |
 | FactSet | Workday | `workday.mjs` | factset.wd108.myworkdayjobs.com/FactSetCareers | live (63 postings) — the **wd108** tenant; `factset.wd1` returns HTTP_422 on every payload |
 | LSEG | Workday | `workday.mjs` | lseg.wd3.myworkdayjobs.com/Careers | live (792 postings, 18 matching "Singapore") — site is `Careers`, not `Graduate_Careers` (5 postings, campus-only) |
+| RHB Bank | Workday | `workday.mjs` | rhb.wd102.myworkdayjobs.com/RHBExternalCareerSite | live (368 postings, 9 matching "Singapore") |
+| Citi | Radancy (TalentBrew) | `radancy.mjs` | jobs.citi.com/search-jobs (`provider: radancy`) | live (3,425 postings, tenant id 287) — server-rendered search page; Eightfold links on the page are for early-career events only, not the main board; the `myworkdayjobs` link on the page is post-application account management, not job search |
+| HSBC | Eightfold | `eightfold.mjs` (new — see gap) | portal.careers.hsbc.com/careers?domain=hsbc.com (API: `hsbc.eightfold.ai/api/apply/v2/jobs?domain=hsbc.com&location=<Country>`) | live (68 postings matching Singapore) — `mycareer.hsbc.com` (Avature) is a separate legacy portal; the real board linked from `hsbc.com/careers/find-a-job` is Eightfold |
+| CIMB | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (new — see gap) | careers.cimb.com (API: `ejox.fa.ap1.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=CX_1`) | live (509 postings on site CX_1) — 11 sites (CX_1..CX_11) cover different CIMB business lines/countries; SG-specific site not yet isolated |
+| JPMorgan Chase | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (new — see gap) | jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/jobs (API: same host, `siteNumber=CX_1001`) | live (7,482 postings globally) — SG-specific filter not yet isolated |
+| ANZ | SuccessFactors (J2W, RMK instance `career10.successfactors.com`) | `successfactors.mjs` (needs J2W HTML-parser variant) | careers.anz.com/search/?q=&sortColumn=referencedate&sortDirection=desc&startrow=0 | live (100+ postings, `q=Singapore` narrows to 5) — same `career10.successfactors.com` RMK instance as GIC/NETS (`company=anzbanking`); branded CSB API returns 405, J2W search page works; RSS feed also live at `careers.anz.com/services/rss/category/?catid=4739210` (10 items, unclear if capped) |
 | MSCI | iCIMS | `icims.mjs` | globalcareers-msci.icims.com | live (93 postings) |
 | Standard Chartered | SuccessFactors (CSB) | `successfactors.mjs` | jobs.standardchartered.com/ (`provider: successfactors`) | live (697 postings; first posting already a SG role) |
 | CPF Board | SuccessFactors (CSB) | `successfactors.mjs` | careers.cpf.gov.sg/search/?q=& (`provider: successfactors`) | live (23 postings; CSB API reachable directly at careers.cpf.gov.sg — see gotchas) |
@@ -79,7 +85,7 @@ under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 
-The 18 websearch-fallback companies and the `search_queries` boards now live
+The 20 websearch-fallback companies and the `search_queries` boards now live
 in **`TODO.md`** — the "Known ATS / why not direct" notes there are the next
 steps. Resolved companies move back here as Direct rows.
 
@@ -93,16 +99,18 @@ new vendors.
 | Vendor | Provider module | SG companies served | Status |
 |---|---|---|---|
 | Greenhouse | `greenhouse.mjs` | 15 | ✓ direct |
-| Workday | `workday.mjs` | 9 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa, OCBC, FactSet, LSEG) | ✓ direct |
+| Workday | `workday.mjs` | 10 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa, OCBC, FactSet, LSEG, RHB Bank) | ✓ direct |
 | Lever | `lever.mjs` | 4 (Coda Payments, Ninja Van, Nium, GoTo Group) | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
-| SuccessFactors | `successfactors.mjs` | 5 (Standard Chartered, CPF Board — CSB; GIC, NETS — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS |
+| SuccessFactors | `successfactors.mjs` | 6 (Standard Chartered, CPF Board — CSB; GIC, NETS, ANZ — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS, ANZ |
 | Phenom | `phenom.mjs` | 1 | ✓ direct |
-| Radancy | `radancy.mjs` | 1 | ✓ direct |
+| Radancy | `radancy.mjs` | 2 (BlackRock, Citi) | ✓ direct |
 | iCIMS | `icims.mjs` | 1 | ✓ direct |
 | SmartRecruiters | `smartrecruiters.mjs` | 2 (Grab, Carousell — both public company ids on the standard API) | ✓ direct |
 | SEEK (Jobstreet) | `jobstreet.mjs` | 1 (job board) | ✓ direct, `siteKey: SG-Main` |
-| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Shopee, … | gap: see roadmap |
+| Eightfold | `eightfold.mjs` (**new vendor**) | 1 (HSBC) | gap: no provider module yet — API confirmed at `<tenant>.eightfold.ai/api/apply/v2/jobs?domain=<domain>&location=<Country>`, JSON `positions[]`/`count`, no auth needed |
+| Oracle Recruiting Cloud | `oracle-recruiting.mjs` (**new vendor**) | 2 (CIMB, JPMorgan Chase) | gap: no provider module yet — API confirmed at `<tenant>.fa.<region?>.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=<CX_N>`, JSON `requisitionList[]`/`TotalJobsCount`, no auth needed |
+| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Shopee, Maybank, Deutsche Bank, … | gap: see roadmap |
 
 ## How boards were verified (repeat for new candidates)
 
@@ -243,6 +251,27 @@ Lever board is public and unrelated to that domain) and Carousell
 (SmartRecruiters, `jobs.smartrecruiters.com/CarousellGroup`, 50 postings/9 SG
 — the 2026-08-06 note called this "private company id, 404s on `Carousell`",
 which was simply the wrong slug: the real one is `CarousellGroup`).
+
+**Resolved 2026-08-07 (batch 3 — bank cluster probe)**: RHB Bank (Workday
+`rhb.wd102`, 368 postings/9 SG), Citi (Radancy tenant 287, 3,425 postings —
+same provider as BlackRock), HSBC (**new vendor: Eightfold**, 68 SG postings
+via `hsbc.eightfold.ai/api/apply/v2/jobs`), CIMB (**new vendor: Oracle
+Recruiting Cloud**, 509 postings on site CX_1 of 11), JPMorgan Chase (Oracle
+Recruiting Cloud, 7,482 postings on site CX_1001), ANZ (SuccessFactors J2W,
+same `career10.successfactors.com` RMK instance as GIC/NETS, `q=Singapore`
+narrows to 5). Two still open from this batch:
+- **Maybank** — `maybankjobs.com` is a 14.5 KB JS shell, no ATS markers in
+  the initial HTML; needs a headless-browser scan to find the real API.
+- **Deutsche Bank** — `careers.db.com/professionals/search-roles/` is fully
+  client-rendered (92 KB, zero markers, no discoverable API path in the raw
+  HTML); same treatment needed.
+
+Both Eightfold and Oracle Recruiting Cloud are now **new vendor gaps** (like
+NBIM/Webcruiter) — the API shape is confirmed live and simple (plain JSON,
+no auth), so a provider module is a reasonable next step before probing more
+banks, since Oracle Recruiting Cloud alone would already cover 2 companies
+(CIMB, JPMorgan) with more large banks (e.g. Citi uses a different vendor,
+but other global banks commonly run Oracle Recruiting Cloud or Eightfold too).
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from
