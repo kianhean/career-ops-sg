@@ -1,6 +1,6 @@
 # TODO — Websearch fallback → Direct
 
-The 20 SG/APAC companies that still scan via websearch fallback
+The 18 SG/APAC companies that still scan via websearch fallback
 (`scan_query`) instead of a zero-token ATS provider. Each row records what
 was tried and why the board isn't direct yet — the "Known ATS / why not
 direct" column IS the next step. When a company gets resolved, move it to
@@ -20,7 +20,13 @@ FactSet (Workday, `factset.wd108.myworkdayjobs.com/FactSetCareers`,
 63 postings — `careers.factset.com` never existed, that was a bad guess, not
 a network block), LSEG (Workday, `lseg.wd3.myworkdayjobs.com/Careers`,
 792 postings, 18 SG-matching — `careers.lseg.com` never existed either; real
-site is `lseg.com/en/careers`) — moved to Direct table in `sg-ats-coverage.md`.
+site is `lseg.com/en/careers`), GoTo Group (Lever, `jobs.lever.co/GoToGroup`,
+48 postings / 19 SG — found via websearch, not visible from curl-ing
+`gotocompany.com` directly), Carousell (SmartRecruiters,
+`jobs.smartrecruiters.com/CarousellGroup`, 50 postings / 9 SG — the
+"private company id" note was wrong: the real public slug is
+`CarousellGroup`, not `Carousell`) — moved to Direct table in
+`sg-ats-coverage.md`.
 
 Priority order for tackling these: the **Expansion roadmap** section in
 `sg-ats-coverage.md`.
@@ -29,11 +35,11 @@ Priority order for tackling these: the **Expansion roadmap** section in
 |---|---|
 | Sea Group | careers SPA; no vendor markers; SR slugs verified absent |
 | Shopee | JS shell (3.5 KB); no markers; gh/ashby/lever/SR slugs absent |
-| GoTo Group | careers SPA; no markers |
-| Traveloka | careers SPA; no markers |
-| Carousell | **SmartRecruiters-backed** (WordPress `api.php` proxy) but private company id — public SR API 404s |
+| GoTo Group | → **Resolved** — moved to Direct. |
+| Traveloka | `traveloka.wd3.myworkdayjobs.com/Traveloka` is indexed by search engines but returns `HTTP_422` live on every site/tenant guess (2026-08-07) — likely a decommissioned Workday board; current `careers.traveloka.com/jobs` is client-rendered, no ATS markers in initial HTML |
+| Carousell | → **Resolved** — moved to Direct. |
 | Ninja Van | → **Resolved** — moved to Direct. |
-| Atlassian | careers SPA; gh/ashby/lever slugs absent |
+| Atlassian | **Beamery**-backed talent-community signup found (`flows.beamery.com/atlassian/tcsignup`, 2026-08-07) — that's Beamery's CRM widget, not confirmed as the job-listing source; gh/lever/SR/workday slug guesses (`atlassian`) all miss |
 | Canva | JS shell; no markers; slugs absent |
 | Aspire | SPA; no markers |
 | StashAway | SPA; no markers |
@@ -95,9 +101,12 @@ HSBC, Citi, JPMorgan, Deutsche Bank, ANZ, RHB, Hong Leong Bank.
 **Insurance**: AIA, Prudential, Great Eastern, Manulife, NTUC Income,
 Allianz, Sompo.
 
-**SPA-shell tech** (same bucket as Sea Group/Shopee/GoTo/Traveloka/
-Atlassian/Canva/Revolut — expect no markers, low hit rate): ByteDance/TikTok,
-Lazada, Agoda, Klook, Booking.com, Gojek (if still distinct from GoTo), Zalo/VNG.
+**SPA-shell tech** (same bucket as Sea Group/Shopee/Traveloka/Atlassian/Canva/
+Revolut — expect no markers on the marketing domain itself, but check
+websearch for a separate ATS board first: GoTo Group and Carousell were both
+in this bucket until 2026-08-07, when websearch turned up their real Lever/
+SmartRecruiters boards on unrelated domains): ByteDance/TikTok, Lazada, Agoda,
+Klook, Booking.com, Gojek (if still distinct from GoTo), Zalo/VNG.
 
 **Statutory boards / govt** (same bucket as CPF Board/SGX/MAS — likely
 Careers@Gov with no public API, low priority): HDB, IMDA, GovTech, EDB, JTC,

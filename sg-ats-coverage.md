@@ -17,7 +17,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
 **Provider** = the career-ops module that serves this ATS vendor.
 
-## Direct ATS (38 companies, 10 vendors)
+## Direct ATS (40 companies, 10 vendors)
 
 | Company | ATS vendor | career-ops provider | Board URL | Verified state (2026-08-06) |
 |---|---|---|---|---|
@@ -40,6 +40,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Confluent | Ashby | `ashby.mjs` | jobs.ashbyhq.com/confluent | live |
 | Coda Payments | Lever | `lever.mjs` | jobs.lever.co/Coda | live (24 postings) — **slug is capital-C `Coda`** |
 | Nium | Lever | `lever.mjs` | jobs.lever.co/nium | live |
+| GoTo Group | Lever | `lever.mjs` | jobs.lever.co/GoToGroup | live (48 postings, 19 Singapore) — previously logged "SPA, no markers"; found via websearch, not visible from curl-ing `gotocompany.com` directly |
 | DBS Bank | Workday | `workday.mjs` | dbs.wd3.myworkdayjobs.com/DBS_Careers | live (1,382 postings) |
 | UOB | Workday | `workday.mjs` | uobgroup.wd3.myworkdayjobs.com/UOBExternal | live (976 postings) |
 | Grab | SmartRecruiters (Umbraco branded front) | `smartrecruiters.mjs` | www.grab.careers/en/jobs/ (SR API: `/v1/companies/Grab/postings`; RSS: `/en/jobs/xml/?rss=true`) | live (346 postings, 77 SG) — migrated from Workday; old board dead |
@@ -59,6 +60,7 @@ Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websear
 | Ninja Van | Lever | `lever.mjs` | jobs.lever.co/ninjavan | live (174 postings, 15 SG) — single Lever board serves both Ninja Van (logistics) and Ninja Mart (FMCG) under same parent company |
 | BlackRock | Radancy (TalentBrew) | `radancy.mjs` | careers.blackrock.com/en/search-jobs (`provider: radancy`) | live (280 postings) |
 | Mastercard | Phenom (fronting Workday) | `phenom.mjs` | careers.mastercard.com (`provider: phenom`) | live (1,129 postings; SG roles prominent) |
+| Carousell | SmartRecruiters | `smartrecruiters.mjs` | jobs.smartrecruiters.com/CarousellGroup | live (50 postings, 9 SG) — the public company id is **`CarousellGroup`**, not `Carousell`; the 2026-08-06 note ("private company id, public SR API 404s") was a wrong slug guess, not an actual access restriction |
 
 Also direct: **Jobstreet Singapore** (job board, SEEK v5 API, `provider: jobstreet`
 with `siteKey: SG-Main`) under `job_boards`. The other `job_boards` entries
@@ -77,7 +79,7 @@ under `job_boards` and the ×3 MyCareersFuture `search_queries` entries retire.
 
 ## Backlog
 
-The 20 websearch-fallback companies and the `search_queries` boards now live
+The 18 websearch-fallback companies and the `search_queries` boards now live
 in **`TODO.md`** — the "Known ATS / why not direct" notes there are the next
 steps. Resolved companies move back here as Direct rows.
 
@@ -92,13 +94,13 @@ new vendors.
 |---|---|---|---|
 | Greenhouse | `greenhouse.mjs` | 15 | ✓ direct |
 | Workday | `workday.mjs` | 9 (DBS, Nasdaq, PropertyGuru, S&P Global, UOB, Visa, OCBC, FactSet, LSEG) | ✓ direct |
-| Lever | `lever.mjs` | 3 (Coda Payments, Ninja Van, Nium) | ✓ direct |
+| Lever | `lever.mjs` | 4 (Coda Payments, Ninja Van, Nium, GoTo Group) | ✓ direct |
 | Ashby | `ashby.mjs` | 2 | ✓ direct |
 | SuccessFactors | `successfactors.mjs` | 5 (Standard Chartered, CPF Board — CSB; GIC, NETS — RMK/J2W; SGX — J2W) | ✓ direct; J2W HTML-parser variant needed for SGX, GIC, NETS |
 | Phenom | `phenom.mjs` | 1 | ✓ direct |
 | Radancy | `radancy.mjs` | 1 | ✓ direct |
 | iCIMS | `icims.mjs` | 1 | ✓ direct |
-| SmartRecruiters | `smartrecruiters.mjs` | 1 (Grab — public company id) | ✓ direct; Carousell still needs `local_parser` via its WP proxy |
+| SmartRecruiters | `smartrecruiters.mjs` | 2 (Grab, Carousell — both public company ids on the standard API) | ✓ direct |
 | SEEK (Jobstreet) | `jobstreet.mjs` | 1 (job board) | ✓ direct, `siteKey: SG-Main` |
 | Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Shopee, … | gap: see roadmap |
 
@@ -210,10 +212,19 @@ expanding career-ops' SG coverage:
    no standard ATS markers found.
 7. **MAS** — no direct job listings found on `mas.gov.sg/careers`; likely
    Careers@Gov (government HR system) with no public API.
-8. **Sea Group, Shopee, GoTo, Traveloka, Atlassian, Canva, Revolut, Aspire,
-   StashAway** — all SPA/JS shells with no ATS markers extractable from curl.
-9. **Carousell** — SmartRecruiters-backed but private company id (public SR
-   API 404s on the `Carousell` slug).
+8. **Atlassian** — **Beamery**-backed (`flows.beamery.com/atlassian/tcsignup`
+   talent-community signup, found 2026-08-07); this is Beamery's CRM/signup
+   widget, not confirmed as the actual job-listing source — Lever/Greenhouse/
+   SmartRecruiters/Workday slug guesses (`atlassian`) all miss. Needs the
+   real job-search XHR captured from a browser session to find the API.
+9. **Traveloka** — a `traveloka.wd3.myworkdayjobs.com/Traveloka` Workday board
+   is indexed by search engines but returns `HTTP_422` live (2026-08-07) on
+   every site-name/tenant guess tried — likely a decommissioned board; current
+   `careers.traveloka.com/jobs` is client-rendered with no ATS markers in the
+   initial HTML. Re-probe if the real API surfaces (e.g. via captured XHR).
+10. **Sea Group, Shopee, Canva, Revolut, Aspire, StashAway** — all SPA/JS
+    shells with no ATS markers extractable from curl; re-checked 2026-08-07,
+    still no hits via curl+grep or vendor-slug guessing.
 
 **Resolved 2026-08-07**: OCBC (Workday `ocbc.wd102`, not Taleo — bank
 migrated off `ocbc.taleo.net`, which is now globally NXDOMAIN, not just
@@ -224,6 +235,14 @@ also never existed, real page is `lseg.com/en/careers`). All three DNS
 "blocks" from 2026-08-06 were misdiagnosed: the branded `careers.*` subdomains
 simply don't exist (confirmed via public DoH resolver, not just this
 network) — the companies use unbranded Workday tenant URLs directly.
+
+**Also resolved 2026-08-07** (found via websearch, not curl-only re-checks):
+GoTo Group (Lever, `jobs.lever.co/GoToGroup`, 48 postings/19 SG — the
+`gotocompany.com` careers page itself is a JS shell with no markers, but the
+Lever board is public and unrelated to that domain) and Carousell
+(SmartRecruiters, `jobs.smartrecruiters.com/CarousellGroup`, 50 postings/9 SG
+— the 2026-08-06 note called this "private company id, 404s on `Carousell`",
+which was simply the wrong slug: the real one is `CarousellGroup`).
 
 Rule of thumb: never hand-guess a board slug into `portals.yml` — a wrong slug fails
 silently and looks like zero openings. Verify, then commit (career-search runs from
