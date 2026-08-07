@@ -2,16 +2,14 @@
 
 Singapore-focused inventory of ATS vendors behind every tracked Singapore/APAC
 employer, mapped to the provider modules in the **career-ops** skill
-(`providers/*.mjs`). The goal of this repo is to expand career-ops' zero-token
-ATS scanning for the Singapore market: every row under **Direct** is a company
-the skill can already scan end-to-end; the **Gap** sections are the expansion
-targets.
+(`providers/*.mjs`). This doc tracks what's **verified and working**: every
+row under **Direct** is a company the skill can already scan end-to-end.
+Still-open companies and untried candidates live in `TODO.md`, not here.
 
 Data provenance: verified 2026-08-06 against `career-search` repo
 (`portals.yml → tracked_companies`, every entry end-to-end tested with
-`node scan.mjs --company "<name>"`); OCBC, FactSet, LSEG rows added
-2026-08-07 (see roadmap "Resolved 2026-08-07" for how the earlier
-DNS-blocked/Taleo guesses turned out to be stale, not network-limited).
+`node scan.mjs --company "<name>"`); rows added since then are dated inline
+and in "Resolution history" below.
 
 Legend: **Direct** = zero-token scan via the vendor's public API (no LLM/websearch).
 **Websearch** = fallback scan via `scan_query` (broader but can lag the real board).
@@ -114,7 +112,7 @@ new vendors.
 | Oracle Recruiting Cloud | `oracle-recruiting.mjs` (**new vendor**) | 2 (CIMB, JPMorgan Chase) | gap: no provider module yet — API confirmed at `<tenant>.fa.<region?>.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=<CX_N>`, JSON `requisitionList[]`/`TotalJobsCount`, no auth needed |
 | WorkAtSea (Sea Group custom) | `workatsea.mjs` (**new vendor**) | 1 (Shopee) | gap: no provider module yet — API confirmed at `ats.workatsea.com/ats/api/v1/user/job/list/?limit=<n>&offset=<n>`, JSON `data.job_list[]`/`data.total_count`, no auth needed; found via captured browser XHR, not visible from curl-ing the page |
 | SmartRecruiters Attrax | HTML-parser variant (**new pattern**) | 1 (Wise) | gap: no provider module yet — the Attrax-rendered search page (`wise.jobs/jobs?options=<location_id>&page=<n>`) is server-rendered HTML, zero-token via plain curl; same shape as the SuccessFactors J2W variant already needed for SGX/GIC/NETS/ANZ |
-| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Maybank, Deutsche Bank, … | gap: see roadmap |
+| Custom/unknown | — | HRT, Bloomberg, Citadel, DRW, Sea, Maybank, Deutsche Bank, … | gap: see `TODO.md` |
 
 ## How boards were verified (repeat for new candidates)
 
@@ -199,44 +197,11 @@ The J2W server-rendered search works: `GET /search/?q=&sortColumn=referencedate&
 returns jobs as HTML tiles. Same `startrow` pagination pattern as SGX; the
 `successfactors.mjs` J2W HTML-parser variant can serve all three.
 
-## Expansion roadmap (next candidates to resolve)
+## Resolution history
 
-Priority order — these are the SG companies that move from Websearch → Direct,
-expanding career-ops' SG coverage:
-
-1. **Temasek** — `www.temasek.com.sg` itself is 403 WAF-blocked, but the real
-   careers portal lives off-domain: **SAP SuccessFactors** RCM/CSB 2.0 career
-   site at `career2.successfactors.eu/career?company=temasekcapP2` (verified
-   2026-08-07, HTTP 200 from plain curl). Not a simple REST board though —
-   the job search widget (`getInitialJobSearchData`) is wired through the
-   classic SF `AjaxService`/JSF ViewState postback pattern, not a bare JSON
-   endpoint like the CSB/RMK/J2W variants already supported. Needs either the
-   real XHR payload captured from a browser session, or a headless-browser
-   scan like `scan-interamt.mjs`.
-2. **HRT** — custom ATS with a public jobs API; a `local_parser` is plausible.
-3. **NBIM** — confirmed **Webcruiter** (`398280.webcruiter.no`, Nordic ATS); no
-   existing provider module; would need a new provider.
-4. **Fullerton Fund Management** — jobs are **LinkedIn only** (`linkedin.com/company/fullerton-fund-management-company/jobs/`);
-   not zero-token scannable.
-5. **Wise** — **SmartRecruiters Attrax** custom career site (`wise.jobs`);
-   underlying ATS may be SmartRecruiters but public API not directly accessible.
-6. **Endowus** — `careers-page.com` custom platform (`endowus.careers-page.com`);
-   no standard ATS markers found.
-7. **MAS** — no direct job listings found on `mas.gov.sg/careers`; likely
-   Careers@Gov (government HR system) with no public API.
-8. **Atlassian** — **Beamery**-backed (`flows.beamery.com/atlassian/tcsignup`
-   talent-community signup, found 2026-08-07); this is Beamery's CRM/signup
-   widget, not confirmed as the actual job-listing source — Lever/Greenhouse/
-   SmartRecruiters/Workday slug guesses (`atlassian`) all miss. Needs the
-   real job-search XHR captured from a browser session to find the API.
-9. **Traveloka** — a `traveloka.wd3.myworkdayjobs.com/Traveloka` Workday board
-   is indexed by search engines but returns `HTTP_422` live (2026-08-07) on
-   every site-name/tenant guess tried — likely a decommissioned board; current
-   `careers.traveloka.com/jobs` is client-rendered with no ATS markers in the
-   initial HTML. Re-probe if the real API surfaces (e.g. via captured XHR).
-10. **Sea Group, Shopee, Canva, Revolut, Aspire, StashAway** — all SPA/JS
-    shells with no ATS markers extractable from curl; re-checked 2026-08-07,
-    still no hits via curl+grep or vendor-slug guessing.
+How the Direct table grew, batch by batch — kept for the gotchas each batch
+surfaced. Still-open companies and untried candidates live in `TODO.md`, not
+here.
 
 **Resolved 2026-08-07**: OCBC (Workday `ocbc.wd102`, not Taleo — bank
 migrated off `ocbc.taleo.net`, which is now globally NXDOMAIN, not just
